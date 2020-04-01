@@ -1,9 +1,14 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *A Trap card that whatever monster attacked from the opponent if it has over 1000 attack then it gets destroyed
+ */
 package cards;
 
 import java.io.FileNotFoundException;
 
-import player.Player;
-import states.DuelingState;
+import boards.Board;
+import player.Duelist;
 import types.CardType;
 
 public class TrapHole extends MagicCard{
@@ -12,7 +17,7 @@ public class TrapHole extends MagicCard{
 		
 	}
 	
-	public void effect(DuelingState duelingState, Player player, Player opponent) {
+	public void effect(Duelist player,Duelist opponent,Board board) {
 		
 	}
 	

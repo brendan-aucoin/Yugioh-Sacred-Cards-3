@@ -1,6 +1,7 @@
 /*
- * make it so when you scroll up the camera moves to see the rest of the board/hand or opponents field
-on all dueling everywhere theres the somewhat transparent black box thing on the bottom of your screen that would go over the camera
+ *Brendan Aucoin
+ *07/06/2019
+ *holds all the logic for dueling
  * */
 package states;
 
@@ -18,13 +19,15 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
+import actions.ActionHandler;
+import actions.ActionList;
 import boards.Board;
 import camera.Camera;
-import cards.Card;
 import cards.MagicCard;
 import cards.Monster;
 import dueling.ActivateCardPane;
 import dueling.CardInfoPane;
+import dueling.Deck;
 import dueling.Phase;
 import dueling.Spot;
 import dueling.StartTurnPhase;
@@ -32,19 +35,20 @@ import game.Game;
 import gui.Display;
 import interaction_pane.InteractionPane;
 import player.Ai;
+import player.Duelist;
 import player.Player;
 
 public class DuelingState extends InteractionPane implements State{
 	private Board board;
 	private Camera cam;
-	private Player player;
+	private Duelist player;
 	private Ai opponent;
 	private Rectangle playerHandBounds,opponentHandBounds;
 	private BufferedImage backOfCardImage;
 	private StartTurnPhase startTurnPhase;
 	private ActivateCardPane activateCardPane;
 	private CardInfoPane cardInfoPane;
-	public static Phase phase;
+	private Deck originalPlayerDeck,originalOpponentDeck;
 	private boolean canScroll;
 	private boolean playerGoesFirst;
 	
@@ -53,24 +57,16 @@ public class DuelingState extends InteractionPane implements State{
 	private List<Spot> draggedSpotList;
 	private Point draggedPoint;
 	private Rectangle draggingBounds;
+	public static int turnCount = 0;
+	public static Phase phase;
+	public static ActionHandler actionHandler;
 	public DuelingState(Game game) {
 		super(game,new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height));
 		cam = new Camera(0,0);
 		init();
-		
 	}
 	
-	public void setHandBounds() {
-		playerHandBounds = new Rectangle(0,
-		getBounds().height - getBounds().height/10,
-		getBounds().width,getBounds().height/5);
-		
-		opponentHandBounds = new Rectangle(0,
-		(int) (board.getOpponentField().getBounds().y)
-		,getBounds().width,getBounds().height/5);
-		
-	}
-	
+	/*initializes all the defaults*/
 	public void init() {
 		super.init();
 		opponent = null;
@@ -85,31 +81,61 @@ public class DuelingState extends InteractionPane implements State{
 		draggedSpotList = null;
 		draggedPoint = new Point();
 		draggingBounds = new Rectangle();
-		
+		actionHandler = new ActionHandler();
 	}
 	
+	/*needs to do this first after you set the board*/
+	public void setHandBounds() {
+		playerHandBounds = new Rectangle(0,
+		getBounds().height - getBounds().height/10,
+		getBounds().width,getBounds().height/5);
+		
+		opponentHandBounds = new Rectangle(0,
+		(int) (board.getOpponentField().getBounds().y)
+		,getBounds().width,getBounds().height/5);
+		
+	}
+	/*this is called every time you talk to an enemy */
 	public void startDuel() {
+		//sets the boards players
 		board.setPlayer(player);
 		board.setOpponent(opponent);
-		
-		activateCardPane.setButtonBounds();
-		
+		//keep track of the original decks during the duel because at the end of the duel you want to reset the players deck
+		originalPlayerDeck = new Deck(player.getDeck(),"Original Player Deck");
+		originalOpponentDeck = new Deck(opponent.getDeck(),"Original Opponent Deck");
+		activateCardPane.setButtonBounds();//the panel for activating cards needs to have the proper button boundaries
+		//create the hand bounds of both players
 		player.createHandBounds(playerHandBounds);
 		opponent.createHandBounds(opponentHandBounds);
+		//initialize both players hands which will create the spots
 		player.getHand().init();
 		opponent.getHand().init();
 		
+		//always start by drawing 5 cards
 		player.draw(5);
 		opponent.draw(5);
-		
+		//decide which player goes first 
 		decideOrder();
 		phase = Phase.START_TURN;
 	}
-	
+	public void endDuel() {
+		board.setPlayer(null);
+		board.setOpponent(null);
+		
+		player.setDeck(originalPlayerDeck);
+		player.setHealth(Player.STARTING_HEALTH);
+		opponent.setDeck(originalOpponentDeck);
+		opponent.setHealth(Player.STARTING_HEALTH);
+		
+		player.createHandBounds(null);
+		opponent.createHandBounds(null);
+		phase = null;
+	}
+	/*a 50 50 chance of the player going first and then change the turn*/
 	private void decideOrder() {
 		playerGoesFirst =  new Random().nextInt(100) <50 ? true: false;
 		
-		Player firstPlayer = null;
+		Duelist firstPlayer = null;
 		if(playerGoesFirst) {
 			firstPlayer = player;
 			changeTurn(player);
@@ -121,56 +147,85 @@ public class DuelingState extends InteractionPane implements State{
 		String nameSuffix = firstPlayer.getName().charAt(0) == 's' || firstPlayer.getName().charAt(0) == 'S' ? "'": "'s";
 		startTurnPhase.setText("Its " + firstPlayer.getName() + nameSuffix + " turn");
 		
-		startTurnPhase.setStart(true);
+		startTurnPhase.setStart(true);//start the start turn phase pop up
 	}
-	
-	public void changeTurn(Player player) {
+	/*uses the start turn phase pop up to show the next player*/
+	public void changeTurn(Duelist player) {
 		startTurnPhase.setNextPlayer(player);
 	}
-	
+	/*you want to update the board and the activate card pop up*/
 	public void update() {
+		if(checkIfOver()) {
+			decideWinner();
+		}
 		board.update();
 		activateCardPane.update();
 		if(phase == Phase.START_TURN) {
 			startTurnPhase.update();
 		}
+		//if its the AI's turn then call the update function for the Ai and make it so you cant scroll
 		else if(phase == Phase.AI_TURN) {
 			opponent.update();
 			canScroll = false;
-			
 		}
 	}
-	
-	
+	/*checks if the game is over by seeing the health of both players*/
+	private boolean checkIfOver() {
+		return player.getHealth() <=0 || opponent.getHealth()<=0;
+	}
+	/*returns the player who won*/
+	private Duelist decideWinner() {
+		if(player.getHealth() <=0) {return opponent;}
+		else if(opponent.getHealth()<=0) {return player;}
+		return null;
+	}
 	
 	@Override
+	/*call mouse moved for all sub components*/
 	public void mouseMoved(MouseEvent e) {
 		super.mouseMoved(e);
 		setMouseY((int) (getMouseY() + -(cam.getY())));
 		cardInfoPane.mouseMoved(e);
 		activateCardPane.mouseMoved(e);
 	}
+	
 	@Override
+	/*if you click on your hand*/
 	public void mousePressed(MouseEvent e) {
+		//when you click on your hand
 		if(!activateCardPane.isDisplaying()) {
 			if(mouseOver(player.getHand().getBounds())) {
 				clickOnHand(e);
 			}
 		}
+		//click on end turn and switch the phase if it is ur turn 
 		if(canScroll && mouseOver(board.getPlayerEndTurnBounds()) && phase == Phase.PLAYERS_TURN) {
-			phase = Phase.AI_TURN;
+			//phase = Phase.AI_TURN;
+			//perform the action for switching turns here
+			actionHandler.getAction(ActionList.END_TURN).performAction(player,board.getPlayerField(),Phase.AI_TURN);
 		}
+		
 		activateCardPane.mousePressed(e);
 		
 		
 	}
 	
+	/*loop through the players hand 
+	 * if the player hasnt played a card
+	 * if you click on a full spot set the dragged spot list to be either monster or magic 
+	 * */
 	private void clickOnHand(MouseEvent e) {
 			for(int i =0; i < player.getHand().getSpots().size();i++) {
 				Spot spot = player.getHand().getSpots().get(i);
 				if(!player.hasPlayedCard() || (spot.getCard() instanceof MagicCard)) {
 					if(mouseOver(spot.getBounds())){
 						if(spot.hasCard()) {
+							if(spot.getCard() instanceof Monster) {
+								Monster monster = (Monster)spot.getCard();
+								if(player.getNumTributes() < monster.getTributeCost()) {
+									continue;
+								}
+							}
 							canDrag = true;
 							draggedSpot = spot;
 							if(draggedSpot.getCard() instanceof Monster) {
@@ -188,6 +243,7 @@ public class DuelingState extends InteractionPane implements State{
 	}
 	
 	@Override
+	/*if you are dragging then try and play your card*/
 	public void mouseReleased(MouseEvent e) {
 		if(canDrag) {
 		if(draggedSpotList == null) {return;}
@@ -197,25 +253,23 @@ public class DuelingState extends InteractionPane implements State{
 		
 	}
 	
+	/*loop through whichever dragged spot list is initialized 
+	 * if you mouse is inside the bounds then summon that card */
 	private void playCardFromHand() {
 		for(int i =0; i < draggedSpotList.size();i++) {
 			Spot boardSpot = draggedSpotList.get(i);
-			if(inside(draggingBounds,boardSpot.getBounds())) {	
-					boolean playedCard = summonCard(draggedSpot.getCard(),boardSpot,board.getPlayerField().getField(),player);
-					if(playedCard) {
-						setPlayedCard(player,draggedSpot.getCard());
-						player.playCardFromHand(draggedSpot);
-					}
-					
-					
-					break;
+			if(inside(draggingBounds,boardSpot.getBounds())) {
+				actionHandler.getAction(ActionList.PLAY_CARD_FROM_HAND).performAction(player,draggedSpot,boardSpot,board,board.getPlayerField());	
+				break;
 			}
 		}
+		//set everything back to default
 		draggedSpot = null;
 		draggedSpotList = null;
 		draggedPoint = new Point();
 		draggingBounds = new Rectangle();
 	}
+	/*creates a point for your dragging when you move the mouse*/
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		draggedPoint = e.getPoint();
@@ -225,38 +279,7 @@ public class DuelingState extends InteractionPane implements State{
 				);
 	}
 	
-	public void setPlayedCard(Player player,Card c) {
-		if(!(c instanceof MagicCard)) {
-			player.setPlayedCard(true);
-		}
-	}
-	public boolean summonCard(Card card,Spot spot,List<Card> field,Player player) {
-			if(spot.isOpen()) {
-				if(card instanceof Monster) {
-					Monster monster = (Monster)card;
-					if(monster.getTributeCost() <= player.getNumTributes()) {
-						player.setNumTributes(player.getNumTributes()-monster.getTributeCost());
-						if(player.getNumTributes() <=0) {player.setNumTributes(0);}
-					}
-					else {
-						return false;
-					}
-				}
-				spot.setCard(card);
-				field.add(card);
-				spot.setOpen(false);
-				board.buffCard(card);
-				return true;
-			}
-	
-		return false;
-	}
-	
-	public void removeCardFromBoard(Spot spot) {
-		spot.setCard(null);
-		spot.setOpen(true);
-	}
-	
+	/*scrolling the mouse*/
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if(!canScroll) {return;}
@@ -272,25 +295,26 @@ public class DuelingState extends InteractionPane implements State{
 		 }
 	}
 	
+	/*will check if a rectangle is perfectly inside a larger rectangle*/
 	private boolean inside(Rectangle smaller,Rectangle larger) {
 		return smaller.x > larger.x &&
 		smaller.x + smaller.width < larger.x + larger.width &&
 		smaller.y > larger.y &&
 		smaller.y + smaller.height < larger.y + larger.height;
-		}
+	}
 	
-	
+	/*translate the camera and render all components*/
 	public void render(Graphics2D g) {
 		g.translate(cam.getX(), cam.getY());
 		renderDuelState(g);
-		renderAllCards(g);
-		renderDraggedCards(g);
+		renderAllCards(g);///all cards on every field, and every hand
+		renderDraggedCards(g);//the current dragged card needs to be rendered
 		activateCardPane.render(g);
 		g.translate(-cam.getX(), -cam.getY());
-		renderOutsideOfCamera(g);
+		renderOutsideOfCamera(g);//not affected by camera
 		
 	}
-	
+	/*renders the board and the players hands, and all the effects on the hand and board. (colours)*/
 	private void renderDuelState(Graphics2D g) {
 		renderBoard(g);
 		player.getHand().render(g);
@@ -298,18 +322,20 @@ public class DuelingState extends InteractionPane implements State{
 		renderEffectsOnHand(g);
 		renderEffectsOnBoard(g);
 	}
-	
+	/*render the start turn pop up if it is that phase*/
 	private void renderGraphicalEffects(Graphics2D g) {
 		if(phase == Phase.START_TURN) {
 			startTurnPhase.render(g);
 		}
 	}
 	
+	/*you want to render the card info and the other graphical effects outside of the camera*/
 	private void renderOutsideOfCamera(Graphics2D g) {
 		cardInfoPane.render(g);
 		renderGraphicalEffects(g);
 		
 	}
+	/*if you are currently dragging draw the cards image based on the dragged point*/
 	private void renderDraggedCards(Graphics2D g) {
 		if(canDrag) {
 			if(draggedSpot == null) {return;}
@@ -318,6 +344,7 @@ public class DuelingState extends InteractionPane implements State{
 		}
 	}
 	
+	/*render the black or blue colours that you see*/
 	private void renderEffectsOnBoard(Graphics2D g) {
 		if(!canScroll) {return;}
 		for(int i =0; i < board.getPlayerField().allCardSpots().size();i++) {
@@ -337,6 +364,7 @@ public class DuelingState extends InteractionPane implements State{
 		}
 	}
 	
+	/*same as rendering effects on the board*/
 	private void renderEffectsOnHand(Graphics2D g) {
 		if(!canScroll) {return;}
 		for(int i =0; i < player.getHand().getSpots().size();i++) {
@@ -344,11 +372,19 @@ public class DuelingState extends InteractionPane implements State{
 			Rectangle bounds = player.getHand().getSpots().get(i).getBounds();
 			if(player.getHand().getSpots().get(i).hasCard()) {
 				if(mouseOver(getMouseX(),getMouseY(),bounds)) {
-					if(player.hasPlayedCard() && !(spot.getCard() instanceof MagicCard)) {
-						g.setColor(Color.BLACK);
-						g.setStroke(new BasicStroke(8));
-						g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+					//to make sure you have enough tributes to play this card
+					Monster monster = null;
+					if(spot.getCard() instanceof Monster) {
+						monster = (Monster) spot.getCard();
+						if(player.getNumTributes() < monster.getTributeCost()) {
+							renderBlackEffectOnHand(g,bounds);
+							continue;
+						}
 					}
+					if((player.hasPlayedCard()) && !(spot.getCard() instanceof MagicCard)) {
+						renderBlackEffectOnHand(g,bounds);
+					}
+					
 					else {
 						renderCornerHover(g,bounds,new Color(0, 102,204),5);
 					}
@@ -357,7 +393,13 @@ public class DuelingState extends InteractionPane implements State{
 			}
 		}
 	}
-
+	private void renderBlackEffectOnHand(Graphics2D g,Rectangle bounds) {
+		g.setColor(Color.BLACK);
+		g.setStroke(new BasicStroke(8));
+		g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+	}
+	
+	/*render everything on the board except cards*/
 	private void renderBoard(Graphics2D g) {
 		board.render(g);
 		g.setColor(Color.WHITE);
@@ -385,7 +427,7 @@ public class DuelingState extends InteractionPane implements State{
 		board.getOpponentEndTurnBounds().y +board.getOpponentEndTurnBounds().height -  (int)(g.getFont().getStringBounds("END TURN", frc).getHeight()/3));
 			
 	}
-
+	/*render the blue corner hover effect*/
 	private void renderCornerHover(Graphics2D g,Rectangle bounds,Color col,int strokeWidth) {
 		g.setColor(col);
 		g.setStroke(new BasicStroke(strokeWidth));
@@ -417,7 +459,7 @@ public class DuelingState extends InteractionPane implements State{
 		
 	}
 	
-	/*everything to do with drawing*/
+	/*renders all cards*/
 	private void renderAllCards(Graphics2D g) {
 		//the player field for monsters
 		renderMonstersOnBoard(g,board.getPlayerField().getMonsterSpots());
@@ -438,14 +480,14 @@ public class DuelingState extends InteractionPane implements State{
 		renderEffectsOnCards(g);
 	}
 	
+	/*render all cards in a list of spots*/
 	private void renderCardsInSpot(Graphics2D g,List<Spot> list) {
 		for(int i =0; i < list.size();i++) {
 			Spot s = list.get(i);
 			s.render(g);
 		}
-		
 	}
-	
+	/*render all the monsters on the board and makes sure its in defense and draws the proper image*/
 	private void renderMonstersOnBoard(Graphics2D g,List<Spot>spots) {
 		for(int i =0; i < spots.size();i++) {
 			Spot spot = spots.get(i);
@@ -473,7 +515,7 @@ public class DuelingState extends InteractionPane implements State{
 			}
 		}
 	}
-	
+	/*drawing the back of card image for all the opponents cards in their hand*/
 	private void renderOpponentCardsInHand(Graphics2D g) {
 		for(int i = 0; i < opponent.getHand().getSpots().size();i++) {
 			Spot spot = opponent.getHand().getSpots().get(i);
@@ -481,6 +523,7 @@ public class DuelingState extends InteractionPane implements State{
 		}
 	}
 	
+	/*renders all the cards in your hand*/
 	private void renderPlayerCardsInHand(Graphics2D g) {
 		for(int i =0; i < player.getHand().getSpots().size();i++) {
 			Spot s = player.getHand().getSpots().get(i);
@@ -490,6 +533,7 @@ public class DuelingState extends InteractionPane implements State{
 		}
 	}
 	
+	/*draws the E if the card has been used already*/
 	private void renderEffectsOnCards(Graphics2D g) {
 		for(int i =0; i < board.allMonsterSpots().size();i++) {
 			Spot spot = board.allMonsterSpots().get(i);
@@ -506,20 +550,15 @@ public class DuelingState extends InteractionPane implements State{
 		}
 	}
 	
-	
+	/*getters and setters*/
 	public void setBoard(Board board) {this.board = board;}
 	public Board getBoard() {return board;}
-
-	public Player getPlayer() {return player;}
-	public void setPlayer(Player player) {this.player = player;}
-	public Player getOpponent() {return opponent;}
-
+	public Duelist getPlayer() {return player;}
+	public void setPlayer(Duelist player) {this.player = player;}
+	public Duelist getOpponent() {return opponent;}
 	public void setOpponent(Ai opponent) {this.opponent = opponent;}
-
 	public Camera getCam() {return cam;}
-
 	public void setCam(Camera cam) {this.cam = cam;}
-	
 	public void setCanScroll(boolean canScroll) {this.canScroll = canScroll;}
 	public boolean getCanScroll() {return canScroll;}
 }

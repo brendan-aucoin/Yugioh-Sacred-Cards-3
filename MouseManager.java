@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *does the mouse events on the current state held in the state manager
+ */
 package input;
 
 import java.awt.event.MouseEvent;
@@ -13,6 +18,7 @@ public class MouseManager implements MouseListener,MouseMotionListener,MouseWhee
 	public MouseManager(StateManager stateManager) {
 		this.stateManager = stateManager;
 	}
+	
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		stateManager.getState().mouseWheelMoved(e);

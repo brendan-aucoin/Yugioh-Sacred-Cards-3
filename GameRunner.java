@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *06/30/2019
  *runs the game
  */

@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *A Basic water card that is 0 tributes
+ */
 package cards;
 
 import java.io.FileNotFoundException;

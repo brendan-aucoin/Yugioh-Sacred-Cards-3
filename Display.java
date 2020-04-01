@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *contains the Frame for the game
+ */
 package gui;
 
 import java.awt.Canvas;
@@ -17,7 +22,8 @@ public class Display {
 	//public static final Dimension SCREEN_SIZE = new Dimension(750,600);
 	private Canvas canvas;
 	public Display() {
-		frame = new JFrame(Game.TITLE);
+		frame = new JFrame(Game.TITLE);//if i change the title of the game i dont wanna find the string in this class its easier to find in game
+		//basic defaults for the jframe 
 		frame.setResizable(false);
 		frame.setSize(SCREEN_SIZE.width, SCREEN_SIZE.height);
 		frame.setLocationRelativeTo(null);

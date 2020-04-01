@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *07/06/2019
+ *The main menu of the game
+ * */
 package states;
 
 import java.awt.AlphaComposite;
@@ -22,9 +27,9 @@ public class MainMenuState extends InteractionPane implements State {
 	private Font buttonFont;
 
 	public MainMenuState(Game game) {
-		super(game,new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height));
+		super(game,new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height));//sets the bounds
 	}
-	
+	/*initializes all the defaults*/
 	protected void init() {
 		super.init();
 		buttonFont = new Font("Lucida Handwriting",Font.PLAIN,60);
@@ -33,6 +38,7 @@ public class MainMenuState extends InteractionPane implements State {
 		sealAlpha = 0;
 		firstTime = true;
 		resetAlpha = false;
+		//the two buttons
 		newGameBounds = new Rectangle(
 		(int)(getBounds().width/3 - getBounds().width/7),
 		getBounds().height - getBounds().height/6,
@@ -47,9 +53,11 @@ public class MainMenuState extends InteractionPane implements State {
 		(int)(buttonFont.getStringBounds(CONTINUE, frc).getHeight()/1.78)
 		);
 	}
+	/*all you update is the background image fading in and out*/
 	public void update() {
 		updateSeal();
 	}
+	/*make the seal background image fade in and out*/
 	private void updateSeal() {
 		if(firstTime) {
 			sealAlpha += 0.004f;
@@ -75,21 +83,17 @@ public class MainMenuState extends InteractionPane implements State {
 			
 		}
 	}
-	
+	/*draw the background images, and the buttons*/
 	public void render(Graphics2D g) {
-
 		g.drawImage(backgroundImage,0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height,null);
 		drawButtons(g);
 		drawSealBackground(g);
-		
-	
-		
 	}
-	
+	/*events for clicking on the new game and the continue buttons*/
 	public void mousePressed(MouseEvent e) {
 		
 	}
-	
+	/*draw the continue and new game buttons*/
 	private void drawButtons(Graphics2D g) {
 		g.setFont(buttonFont);
 		this.changeColour(g, newGameBounds, new Color(244,164,96), new Color(255,215,0));
@@ -99,7 +103,7 @@ public class MainMenuState extends InteractionPane implements State {
 		this.changeColour(g, continueBounds,new Color(244,164,96), new Color(255,215,0));
 		g.drawString(CONTINUE, continueBounds.x, continueBounds.y + continueBounds.height);
 	}
-	
+	/*draw the seal background image with the proper alpha*/
 	private void drawSealBackground(Graphics2D g) {
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,sealAlpha));
 		g.drawImage(sealImage,(int)(Display.SCREEN_SIZE.width/2 - sealImage.getWidth()/2)

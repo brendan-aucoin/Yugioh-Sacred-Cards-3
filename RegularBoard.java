@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *07/06/2019
  *the basic board without any special effects
  * */
@@ -14,8 +14,9 @@ import java.util.ArrayList;
 import cards.Card;
 import dueling.Spot;
 import game.Game;
-
+/*a sub class of board*/
 public class RegularBoard extends Board{
+	//the images that go over the spots
 	private BufferedImage brownTileImage;
 	private BufferedImage whiteTileImage;
 	private BufferedImage background;
@@ -24,6 +25,7 @@ public class RegularBoard extends Board{
 		super(game,BoardType.REGULAR);
 	}
 	
+	//the regular board doesnt need to update anything
 	public void update() {
 		
 	}
@@ -36,26 +38,26 @@ public class RegularBoard extends Board{
 		background = getGame().getImageLoader().loadImage("dueling_images","regular board background.png");
 		middleLineStroke = new BasicStroke(6);
 	}
-	
-	public void buffCard(Card c) {
-		
-	}
+	//the abstract method but the regular board does nothing for buffs.
+	public void buffCard(Card c) {}
 	/*draws everything the super class draws and the images specific to this board*/
 	public void render(Graphics2D g) {
-		super.render(g);
+		super.render(g);//you want to render everything from the super class
+		//draw the background
 		g.drawImage(background, getBounds().x, getBounds().y - getBounds().height, getBounds().width, getBounds().height*2,null);
-		renderMiddleArea(g,middleLineStroke,new Color(205,92,92),Color.WHITE);
-		renderText(g,Color.BLACK);
+		renderMiddleArea(g,middleLineStroke,new Color(205,92,92),Color.WHITE);//method from the super class
+		renderText(g,Color.BLACK);//method from the super class
+		//render the spots with the proper image
 		renderColouredSpots(g,getPlayerField().getMonsterSpots(),0,1);
 		renderColouredSpots(g,getPlayerField().getMagicSpots(),1,0);
 		renderColouredSpots(g,getOpponentField().getMonsterSpots(),1,0);
 		renderColouredSpots(g,getOpponentField().getMagicSpots(),0,1);
-		
 	}
 	
 
 	/*draws the images for the tiles*/
 	private void renderColouredSpots(Graphics2D g,ArrayList<Spot> spots,int even,int odd) {
+		//half of the spots should be lighter image and the other half should be the darker image
 		for(int i =even; i < spots.size();i+=2) {
 			Spot s = spots.get(i);
 			g.drawImage(brownTileImage,s.getBounds().x,s.getBounds().y,s.getBounds().width,s.getBounds().height,null);

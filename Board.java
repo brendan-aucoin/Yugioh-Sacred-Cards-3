@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *07/06/2019
  *a board for the dueling state has it is the parent to any board that has special attribute effects for the board
  *renders everything that all boards will have
@@ -17,36 +17,37 @@ import java.util.ArrayList;
 
 import cards.Card;
 import dueling.Field;
-import dueling.Phase;
 import dueling.Spot;
 import game.Game;
 import gui.Display;
-import player.Player;
-import states.DuelingState;
+import player.Duelist;
 
 public abstract class Board {
-	private BoardType type;
+	private BoardType type;//grass,normal,ghoul, etc.
+	//you have two sides of the board the player field(monsters and magic cards included) and the opponent field.
 	private Field playerField;
 	private Field opponentField;
-	private Rectangle bounds;
+	private Rectangle bounds;//the entire bounds of the board (the entire screen but a bit more becuase you can scroll)
 	protected final Rectangle middleLineBounds;
 	private Game game;
+	//used only for graphics.
 	protected AffineTransform affinetransform;
 	protected FontRenderContext frc;
-	private Player player,opponent;
-	private Rectangle playerEndTurnBounds,opponentEndTurnBounds;
+	private Duelist player,opponent;//you need access to the two players
+	private Rectangle playerEndTurnBounds,opponentEndTurnBounds;//the two buttons.
 	public Board(Game game,BoardType type) {
 		this.game = game;
 		this.type = type;
 		//always the screen size no matter what
 		bounds = new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height);
-		middleLineBounds = new Rectangle(0,(int)(getBounds().height/2 - getBounds().height/7),getBounds().width,getBounds().height/18);
 		
+		middleLineBounds = new Rectangle(0,(int)(getBounds().height/2 - getBounds().height/7),getBounds().width,getBounds().height/18); 	
+		//the two buttons
 		playerEndTurnBounds = new Rectangle(middleLineBounds.x + middleLineBounds.width/2 - middleLineBounds.width/6- middleLineBounds.width/20 ,
 		middleLineBounds.y,middleLineBounds.width/6,middleLineBounds.height);
-		
 		opponentEndTurnBounds = new Rectangle((int) (middleLineBounds.width/2 + middleLineBounds.width/25),
 		middleLineBounds.y,middleLineBounds.width/6,middleLineBounds.height);
+		
 		init();
 	}
 	/*creates the fields for the player and opponent that are always the same*/
@@ -62,6 +63,13 @@ public abstract class Board {
 		
 		createAllSpots();
 	}
+	
+	/*removes a card from a spot*/
+	public void removeCardFromBoard(Spot spot) {
+		spot.setCard(null);
+		spot.setOpen(true);
+	}
+	
 	/*creates all the bounds for all the spots on the fields*/
 	protected void createAllSpots() {
 		//monster spots for player
@@ -79,6 +87,7 @@ public abstract class Board {
 	}
 	/*creates the bounds for one list of spots*/
 	protected void createRowForSpots(ArrayList<Spot> list, int y) {
+		//cant be the list size this method is only used for 1 row (specifically for monter spots or magic spots not both)
 		for(int i =0; i < 5; i++ ) {
 			Rectangle spotBound = new Rectangle(
 			getBounds().width/25 + (int)(getBounds().width/10)*(i*2) ,y,
@@ -89,15 +98,17 @@ public abstract class Board {
 	}
 	//all boards update
 	public abstract void update();
-	
+	//all boards will have some buff to a certain type of card
 	public abstract void buffCard(Card c);
+	
 	//all boards render similar things like the field
 	public void render(Graphics2D g) {
+		//players monster and magic spots
 		renderSpots(g,playerField.getMonsterSpots());
 		renderSpots(g,playerField.getMagicSpots());
+		//the opponents monster and magic cards
 		renderSpots(g,opponentField.getMonsterSpots());
 		renderSpots(g,opponentField.getMagicSpots());
-		
 	}
 	/*draws the outline of a spot to the screen*/
 	private void renderSpots(Graphics2D g,ArrayList<Spot> spots) {
@@ -135,7 +146,7 @@ public abstract class Board {
 		}
 		return allCards;
 	}
-
+	/*returns a list of all the spots on the board*/
 	public ArrayList<Spot> allSpots(){
 		ArrayList<Spot> allSpots = new ArrayList<Spot>();
 		for(int i =0; i < playerField.allCardSpots().size();i++) {
@@ -148,11 +159,11 @@ public abstract class Board {
 		
 		return allSpots;
 	}
-	
+	/*this will be used by all boards but can be added on to but sub classes*/
 	protected void renderMiddleArea(Graphics2D g,BasicStroke stroke,Color back,Color line) {
 		renderMiddleBar(g,stroke,back,line);
 	}
-	
+	/*get a list of all the monter spots*/
 	public ArrayList<Spot> allMonsterSpots(){
 		ArrayList<Spot> allSpots = new ArrayList<Spot>();
 		for(int i =0; i < playerField.getMonsterSpots().size();i++) {
@@ -177,41 +188,22 @@ public abstract class Board {
 	
 	/*getters and setters*/
 	public BoardType getType() {return type;}
-
 	public void setType(BoardType type) {this.type = type;}
-
 	public Field getPlayerField() {return playerField;}
-
 	public void setPlayerField(Field playerField) {this.playerField = playerField;}
-
 	public Field getOpponentField() {return opponentField;}
-
 	public void setOpponentField(Field opponentField) {	this.opponentField = opponentField;}
-
 	public Rectangle getBounds() {return bounds;}
-
 	public void setBounds(Rectangle bounds) {this.bounds = bounds;}
-	
 	public Game getGame() {return game;}
-
 	public Rectangle getPlayerEndTurnBounds() {return playerEndTurnBounds;}
-	
 	public void setPlayerEndTurnBounds(Rectangle playerEndTurnBounds) {this.playerEndTurnBounds = playerEndTurnBounds;}
-	
-	public Rectangle getOpponentEndTurnBounds() {
-		return opponentEndTurnBounds;
-	}
-	public void setOpponentEndTurnBounds(Rectangle opponentEndTurnBounds) {
-		this.opponentEndTurnBounds = opponentEndTurnBounds;
-	}
-	public Player getPlayer() {return player;}
-
-	public void setPlayer(Player player) {this.player = player;}
-
-	public Player getOpponent() {return opponent;}
-
-	public void setOpponent(Player opponent) {this.opponent = opponent;}
-
+	public Rectangle getOpponentEndTurnBounds() {return opponentEndTurnBounds;}
+	public void setOpponentEndTurnBounds(Rectangle opponentEndTurnBounds) {this.opponentEndTurnBounds = opponentEndTurnBounds;}
+	public Duelist getPlayer() {return player;}
+	public void setPlayer(Duelist player) {this.player = player;}
+	public Duelist getOpponent() {return opponent;}
+	public void setOpponent(Duelist opponent) {this.opponent = opponent;}
 	public Rectangle getMiddleLineBounds() {return middleLineBounds;}
 	public AffineTransform getAffinetransform() {return affinetransform;}
 	public void setAffinetransform(AffineTransform affinetransform) {this.affinetransform = affinetransform;}

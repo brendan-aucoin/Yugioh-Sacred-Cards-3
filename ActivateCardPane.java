@@ -1,3 +1,8 @@
+/*
+ *Brendan Acoin
+ *07/06/2019
+ *the box that pops up when you click on your card to attack, defend, tribute or activate the effect.
+ */
 package dueling;
 
 import java.awt.AlphaComposite;
@@ -8,6 +13,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
+import actions.ActionList;
 import cards.Card;
 import cards.EffectMonster;
 import cards.MagicCard;
@@ -28,7 +34,7 @@ public class ActivateCardPane extends EffectPane{
 		super(game,new Rectangle(),duelingState);
 		init();
 	}
-	
+	/*initializes all the variables to null or the default*/
 	public void init() {
 		super.init();
 		displaying = false;
@@ -38,7 +44,7 @@ public class ActivateCardPane extends EffectPane{
 		milleniumEyeImage = getGame().getImageLoader().loadImage("dueling_images","milleniumEye.png");
 		textPopupPane = new TextPopupPane(getDuelingState(),getGame());
 	}
-
+	/*you cannot scroll if the pop up is displaying*/
 	public void update() {
 		if(displaying) {
 			getDuelingState().setCanScroll(false);
@@ -51,6 +57,7 @@ public class ActivateCardPane extends EffectPane{
 	}
 	
 	@Override
+	/*render the black box if it should be displaying */
 	public void render(Graphics2D g) {
 		if(displaying && getBounds()!=null) {
 			renderBox(g);
@@ -60,56 +67,62 @@ public class ActivateCardPane extends EffectPane{
 			textPopupPane.render(g);
 		}
 	}
-	
+	/*the black box */
 	private void renderBox(Graphics2D g) {
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,0.78f));
 		g.setColor(Color.BLACK);
 		g.fill(getBounds());
 		
 	}
-	
+	/*the words attack, defense, etc*/
 	private void renderButtons(Graphics2D g) {
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
 		g.setFont(textFont);
-		renderButton(g,attackBounds,"Attack",!card.hasUsedAction());
-		renderButton(g,tributeBounds,"Tribute",!getDuelingState().getPlayer().hasPlayedCard());
-		renderButton(g,defenseBounds,"Defense",!card.isInDefense());
+		renderButton(g,attackBounds,"Attack",!card.hasUsedAction());//you cant attack if the card has used its action
+		renderButton(g,tributeBounds,"Tribute",!getDuelingState().getPlayer().hasPlayedCard());//you cant tribute if you have already played a card
+		renderButton(g,defenseBounds,"Defense",!card.hasUsedAction());//you cant put your card in defense if you have already done an action
 		if(card instanceof EffectMonster) {
 			EffectMonster effectCard = (EffectMonster)card;
-			renderButton(g,effectBounds,"Effect",!effectCard.hasUsedEffect());
+			renderButton(g,effectBounds,"Effect",!effectCard.hasUsedEffect());//if the card has not used its effect than you can activate it
 		}
 		else {
-			renderButton(g,effectBounds,"Effect",false);
+			renderButton(g,effectBounds,"Effect",false);//if the card is not an effect monster then you cant use its effect
 		}
 	}
-	
+	/*render the hovering colour of the button based on some condition passed in*/
 	private void renderButton(Graphics2D g, Rectangle bounds,String text,boolean condition) {
 		g.setColor(Color.WHITE);
 		if(mouseOver(bounds)) {
 			g.setColor(Color.RED);
 		}
+		//if the condition is not satisfied then gray out the word
 		if(!condition && mouseOver(bounds)) {
 			g.setColor(Color.GRAY);
 		}
+		//draw the string
 		g.drawString(text,bounds.x,bounds.y + bounds.height);
 
+		//draw the hover image on the side if you are hovering over it
 		if(mouseOver(bounds)) {
 			g.drawImage(milleniumEyeImage, bounds.x - getBounds().width/40,bounds.y + bounds.height/2 - milleniumEyeImage.getHeight()/2 ,milleniumEyeImage.getWidth(),milleniumEyeImage.getHeight(),null);
 		}
 	}
-	
+	/*if the box is displaying then you can activate your monster or spell*/
 	public void mousePressed(MouseEvent e) {
 		if(!displaying) {
 			activateMonster();
 			
 			activateSpell();
 		}
-		
 		else {
 			clickOnButtons();
 		}
 	}
 	
+	/*loops through players monsters
+	 * if your mouse is over a spot
+	 * and the spot is not open and the card in that spot has not done an action
+	 * then set displaying to true*/
 	private void activateMonster() {
 		for(int i =0; i < getDuelingState().getBoard().getPlayerField().getMonsterSpots().size();i++) {
 			Spot spot = getDuelingState().getBoard().getPlayerField().getMonsterSpots().get(i);
@@ -122,23 +135,26 @@ public class ActivateCardPane extends EffectPane{
 			}
 		}
 	}
-	
+	/*
+	 * loop through the players spell cards
+	 * if you are hovering over a spot check if the card is a spell
+	 * activates the spell action
+	 * */
 	private void activateSpell() {
 		for(int i =0; i < getDuelingState().getBoard().getPlayerField().getMagicSpots().size();i++) {
 			Spot spot = getDuelingState().getBoard().getPlayerField().getMagicSpots().get(i);
 			if(mouseOver(spot.getBounds())) {
-				Card c = spot.getCard();
-				if(c instanceof MagicCard && c.getType() == CardType.SPELL) {
-					MagicCard spell = (MagicCard)c;
-					textPopupPane.setText(spell.effectText());
-					textPopupPane.setTime(95);
-					textPopupPane.setStart(true);
-					getDuelingState().removeCardFromBoard(spot);
+				if(spot.getCard() instanceof MagicCard && spot.getCard().getType() == CardType.SPELL) {
+					MagicCard spell = (MagicCard)spot.getCard();
+					DuelingState.actionHandler.getAction(ActionList.ACTIVATE_SPELL).performAction(spell, getDuelingState().getPlayer(), getDuelingState().getOpponent(), getDuelingState().getBoard(),spot,getDuelingState().getBoard().getPlayerField(),textPopupPane);
 				}
 			}
 		}
 	}
 	
+	/*
+	 * performs the appropriate action for which button you click on
+	 * */
 	private void clickOnButtons() {
 		if(mouseOver(attackBounds)) {
 			
@@ -148,33 +164,23 @@ public class ActivateCardPane extends EffectPane{
 		}
 		
 		else if(mouseOver(defenseBounds)) {
-			if(!card.isInDefense()) {
-				card.setInDefense(true);
-				card.setUsedAction(true);
-			}
+			DuelingState.actionHandler.getAction(ActionList.DEFEND).performAction(card);
 		}
 		
 		else if(mouseOver(tributeBounds)) {
-			if(!getDuelingState().getPlayer().hasPlayedCard()) {
-			
-			getDuelingState().getPlayer().setNumTributes(getDuelingState().getPlayer().getNumTributes()+1);
-			getDuelingState().removeCardFromBoard(spot);
-			}
+			DuelingState.actionHandler.getAction(ActionList.TRIBUTE).performAction(card,getDuelingState().getPlayer(),spot,getDuelingState().getBoard(),getDuelingState().getBoard().getPlayerField());
 		}
 		
 		else if(mouseOver(effectBounds)) {
-			if(card instanceof EffectMonster) {
-				EffectMonster effectCard = (EffectMonster)card;
-				if(!effectCard.hasUsedEffect()) {
-					card.setUsedAction(true);
-				}
-			}
+			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(card,getDuelingState().getPlayer(),getDuelingState().getOpponent(),getDuelingState().getBoard());
 		}
-			displaying = false;
+		
+		displaying = false;
 		
 		
 	}
 	
+	/*sets where the buttons are going to be*/
 	public void setButtonBounds() {
 		Spot baseSpot = getDuelingState().getBoard().getPlayerField().getMonsterSpots().get(0);
 		//the bounds
@@ -211,25 +217,15 @@ public class ActivateCardPane extends EffectPane{
 			);
 	}
 	
+	/*update mouse position*/
 	public void mouseMoved(MouseEvent e) {
 		super.mouseMoved(e);
 	}
-
-	public boolean isDisplaying() {
-		return displaying;
-	}
-
-	public void setDisplaying(boolean displaying) {
-		this.displaying = displaying;
-	}
-
-	public Card getCard() {
-		return card;
-	}
-
-	public void setCard(Monster card) {
-		this.card = card;
-	}
+	/*getters and setters*/
+	public boolean isDisplaying() {return displaying;}
+	public void setDisplaying(boolean displaying) {this.displaying = displaying;}
+	public Card getCard() {return card;}
+	public void setCard(Monster card) {this.card = card;}
 	
 	
 }

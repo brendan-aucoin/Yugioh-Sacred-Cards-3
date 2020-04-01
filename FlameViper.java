@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *A Basic Monster Card thats 0 tributes.
+ */
 package cards;
 
 import java.io.FileNotFoundException;

@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *07/06/2019
  *all board types
  * */

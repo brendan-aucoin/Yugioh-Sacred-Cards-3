@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *07/06/2019
  *holds a list of cards in your hand and the spots that will appear on the screen
  * */
@@ -17,12 +17,18 @@ public class Hand {
 	private ArrayList<Card> hand;
 	private ArrayList<Spot> spots;
 	private Rectangle bounds;
-	public static final int MAX_CARDS = 5;
+	public static final int MAX_CARDS = 5;//you can only ever have a max of 5 cards in your hand
 	public Hand() {
 		hand = new ArrayList<Card>();
 		spots = new ArrayList<Spot>();
 	}
 	
+	public void init() {
+		createSpots();
+	}
+	
+	/*if your hand isnt full then go through all the spots in your hand and find the first open one and add the card you
+	 * drew from the deck into your hand and set the spots card to whatever you drew and the availability to false*/
 	public void draw(Deck deck) {
 		if(hand.size() < MAX_CARDS) {
 			Card c = deck.draw();
@@ -37,24 +43,23 @@ public class Hand {
 		}
 		
 	}
-	
+	/*remove card from your list and set the spots availability to true and the spots card to null*/
 	public void removeCard(Spot spot) {
-		
 		Card c = spot.getCard();
 		spot.setOpen(true);
 		spot.setCard(null);
 		hand.remove(c);
-		
 	}
+	
+	/*render all the spots and all the cards in those spots*/
 	public void render(Graphics2D g) {
 		g.setColor(new Color(178,34,34));
 		g.fill(bounds);
 		g.setColor(Color.YELLOW);
 		renderSpots(g);
 	}
-	public void init() {
-		createSpots();
-	}
+	
+	/*add all the spots you create to the spots list*/
 	private void createSpots() {
 		for(int i =0; i < MAX_CARDS; i++) {
 			Spot s = new Spot(new Rectangle(
@@ -64,13 +69,15 @@ public class Hand {
 			spots.add(s);
 		}
 	}
+	/*draw the outline of a spot*/
 	private void renderSpots(Graphics2D g) {
-		g.setStroke(new BasicStroke(1));
+		g.setStroke(new BasicStroke(2));
 		for(int i =0 ; i < spots.size();i++) {
 			g.draw(spots.get(i).getBounds());
 		}
 	}
 	
+	/*getters and setters*/
 	public ArrayList<Card> getHand() {return hand;}
 	public void setHand(ArrayList<Card> hand) {this.hand = hand;}
 	public ArrayList<Spot> getSpots() {return spots;}

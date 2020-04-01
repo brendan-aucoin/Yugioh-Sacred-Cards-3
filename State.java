@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *07/06/2019
+ *all states will update and have mouse input
+ * */
 package states;
 
 import java.awt.Graphics2D;

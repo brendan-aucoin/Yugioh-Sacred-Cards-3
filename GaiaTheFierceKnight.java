@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *A Monster Card that is 2 tribute
+ */
 package cards;
 
 import java.io.FileNotFoundException;

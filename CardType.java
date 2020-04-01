@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *an enum that has all types of cards ie monster, spell, trap. but you could always add more
+ */
 package types;
 
 public enum  CardType {

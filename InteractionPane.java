@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *the super class of any state or anything you see in the game because this holds the bounds for that state
+ */
 package interaction_pane;
 
 import java.awt.Color;
@@ -22,11 +27,10 @@ public abstract class InteractionPane {
 		this.bounds=  bounds;
 		init();
 	}
-
-	public  void mousePressed(MouseEvent e) {
-		
-	}
+	/*this is to overload it in the state classes that inherit from this class*/
+	public void mousePressed(MouseEvent e) {}
 	
+	/*sets the variables to 0 and intializes the objects*/
 	protected void init() {
 		mouseX =  mouseY = 0;
 		affinetransform = new AffineTransform();   
@@ -38,7 +42,8 @@ public abstract class InteractionPane {
 	    this.mouseX = e.getX();
 	    this.mouseY = e.getY();
 	  }
-	 
+	  
+	  /*checks if an x and y position is over a rectangle defined by the individual recatangle components*/
 	 protected boolean mouseOver(int mx,int my,int x,int y,int width,int height)
 	 {
 	   if(mx > x && mx < x+width)
@@ -53,27 +58,14 @@ public abstract class InteractionPane {
 	  /*checks if an x and y position is over a rectangle*/
 	  protected boolean mouseOver(int mx,int my,Rectangle bounds)
 	 {
-	   if(mx > bounds.x && mx < bounds.x+bounds.width)
-	   {
-	     if(my > bounds.y && my <bounds.y +bounds.height)
-	     {
-	       return true;
-	     }
-	   }
-	   return false;
+	   return mouseOver(mx,my,bounds.x,bounds.y,bounds.width,bounds.height);
 	 }
 	  /*checks if your mouse if over a rectangle*/
 	  protected boolean mouseOver(Rectangle bounds)
 	 {
-	   if(mouseX > bounds.x && mouseX < bounds.x+bounds.width)
-	   {
-	     if(mouseY > bounds.y && mouseY <bounds.y +bounds.height)
-	     {
-	       return true;
-	     }
-	   }
-	   return false;
+		  return mouseOver(mouseX,mouseY,bounds);
 	 }
+	  
 	  /*if you are over a certain bounds change its colour of the graphics*/
 	  protected void changeColour(Graphics2D g,Rectangle bounds,Color newCol,Color oldCol)
 	 {

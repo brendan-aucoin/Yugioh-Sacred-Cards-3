@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *06/30/2019
  *a basic monster card with no effect
  */
@@ -12,7 +12,7 @@ import java.util.Scanner;
 import attributes.Attribute;
 import types.CardType;
 
-public  class Monster extends Card{
+public abstract class Monster extends Card{
 	private int attack;
 	private int defense;
 	private int tributeCost;
@@ -27,26 +27,29 @@ public  class Monster extends Card{
 		init();
 	}
 	
-	public Monster(Monster m) throws FileNotFoundException {
+	public Monster(Monster m){
 		super(m);
 		this.attack = m.attack;
 		this.defense = m.defense;
 		this.tributeCost = m.tributeCost;
-		this.inDefense = m.inDefense;
 		this.attribute = m.attribute;
 		this.weaknesses = m.weaknesses;
-		init();
+		inDefense = false;
+		weaknesses = new ArrayList<Attribute>();//initialize the weakneses list
+		//init();
 	}
 	
 	protected void init() throws FileNotFoundException {
-		weaknesses = new ArrayList<Attribute>();
+		inDefense = false;
+		weaknesses = new ArrayList<Attribute>();//initialize the weakneses list
 		createBaseStats();
 		determineWeaknesses();
 		normalizeName();
 	}
 	@Override
+	/*this fills in the rest of the stats for the monster from the file*/
 	protected Scanner createBaseStats() throws FileNotFoundException {
-		Scanner word = super.createBaseStats();
+		Scanner word = super.createBaseStats();//you have the scanner that you used in the create base stats method in the card class
 		setAttack(word.nextInt());
 		setDefense(word.nextInt());
 		setTributeCost(word.nextInt());
@@ -54,11 +57,13 @@ public  class Monster extends Card{
 	}
 	
 	@Override
+	/*a string representation of the card by the name, the type, attack, defense*/
 	public String toString() {
 		return super.toString() + ", attack: " + attack + ", defense: " + defense;
 	}
 	/*the weaknesses for all monsters are pre determined*/
 	private void determineWeaknesses() {
+		//right now every attribute only has one weakness but that may change
 		if(attribute == Attribute.LIGHT) {weaknesses.add(Attribute.DARK);}
 		else if(attribute == Attribute.DARK) {weaknesses.add(Attribute.DREAM);}
 		else if(attribute == Attribute.FIEND) {weaknesses.add(Attribute.LIGHT);}
@@ -72,31 +77,22 @@ public  class Monster extends Card{
 		else if(attribute == Attribute.DIVINE) {weaknesses.add(Attribute.DIVINE);}
 	}
 	
-
+	@Override
+    public Monster clone() throws CloneNotSupportedException 
+    { 
+        return (Monster) super.clone(); 
+    } 
+	/*getters and setters*/
 	public int getAttack() {return attack;}
-
 	public void setAttack(int attack) {this.attack = attack;}
-
 	public int getDefense() {return defense;}
-
 	public void setDefense(int defense) {this.defense = defense;}
-
 	public int getTributeCost() {return tributeCost;}
-
 	public void setTributeCost(int tributeCost) {this.tributeCost = tributeCost;}
-
 	public boolean isInDefense() {return inDefense;}
-
 	public void setInDefense(boolean inDefense) {this.inDefense = inDefense;}
-
 	public Attribute getAttribute() {return attribute;}
-
 	public void setAttribute(Attribute attribute) {this.attribute = attribute;}
-
 	public ArrayList<Attribute> getWeaknesses() {return weaknesses;}
-
 	public void setWeaknesses(ArrayList<Attribute> weaknesses) {this.weaknesses = weaknesses;}
-	
-	
-	
 }

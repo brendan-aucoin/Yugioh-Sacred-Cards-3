@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *07/06/2019
+ *puts a pop up on screen for a certain amount of time
+ * */
 package dueling;
 
 import java.awt.AlphaComposite;
@@ -21,7 +26,7 @@ public class TextPopupPane extends EffectPane{
 		0, Display.SCREEN_SIZE.height/2,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height/2 + Display.SCREEN_SIZE.height/5),duelingState);
 		init();
 	}
-
+	/*sets the default values*/
 	protected void init() {
 		super.init();
 		start = false;
@@ -31,6 +36,8 @@ public class TextPopupPane extends EffectPane{
 		boxAlpha = 0.4f;
 		time = 0;
 	}
+	/*every tick you want to update the effect pane(super class) if you have started then make if so you cant scroll
+	 * if you reach the time limit set start to false and make it so you can scroll*/
 	public void update() {
 		super.update();
 		if(isStart()) {
@@ -45,6 +52,21 @@ public class TextPopupPane extends EffectPane{
 			getDuelingState().setCanScroll(true);
 		}*/
 	}
+	public void startNew(String text,int time) {
+		reset();
+		setText(text);
+		setTime(time);
+		setStart(true);
+	}
+	/*reset everything back to the defaults*/
+	public void reset() {
+		ticks= 0;
+		start = false;
+		textAlpha = 1f;
+		boxAlpha = 0.4f;
+		time = 0;
+	}
+	/*render the box and the text */
 	@Override
 	public void render(Graphics2D g) {
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,boxAlpha));
@@ -55,7 +77,7 @@ public class TextPopupPane extends EffectPane{
 		g.setColor(Color.WHITE);
 		g.drawString(text,(int) (getBounds().x + g.getFont().getStringBounds(text, frc).getWidth()/40),(int) (getBounds().y + g.getFont().getStringBounds(text, frc).getHeight()));
 	}
-	
+	/*getters and setters*/
 	public void setStart(boolean start) {this.start = start;}
 	public boolean isStart() {return start;}
 	public int getTicks() {return ticks;}
@@ -66,13 +88,6 @@ public class TextPopupPane extends EffectPane{
 	public void setTextAlpha(float textAlpha) {this.textAlpha = textAlpha;}
 	public float getBoxAlpha() {return boxAlpha;}
 	public void setBoxAlpha(float boxAlpha) {this.boxAlpha = boxAlpha;}
-
-	public int getTime() {
-		return time;
-	}
-
-	public void setTime(int time) {
-		this.time = time;
-	}
-	
+	public int getTime() {return time;}
+	public void setTime(int time) {	this.time = time;}
 }

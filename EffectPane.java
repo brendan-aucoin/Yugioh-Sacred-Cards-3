@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *07/06/2019
+ *an interaction pane that has access to a dueling state object and updates the camera
+ */
 package dueling;
 
 import java.awt.Graphics2D;
@@ -14,26 +19,22 @@ public abstract class EffectPane extends InteractionPane{
 		super(game,bounds);
 		this.duelingState = duelingState;
 	}
+	//all effect panes render and update
 	public abstract void render(Graphics2D g);
-	
-	public void update() {
-		
-	}
+	public void update() {}
 	
 	protected void init() {
 		super.init();
 	}
 	
+	/*updates with the camera from the dueling state*/
 	public void mouseMoved(MouseEvent e) {
 		super.mouseMoved(e);
 		setMouseY((int) (getMouseY() + -(getDuelingState().getCam().getY())));
 	}
-	public DuelingState getDuelingState() {
-		return duelingState;
-	}
-	public void setDuelingState(DuelingState duelingState) {
-		this.duelingState = duelingState;
-	}
+	/*getters and setters*/
+	public DuelingState getDuelingState() {return duelingState;}
+	public void setDuelingState(DuelingState duelingState) {this.duelingState = duelingState;}
 	
 	
 }

@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *holds all the card sprites of the images
+ */
 package images;
 
 import java.awt.image.BufferedImage;
@@ -12,7 +17,7 @@ public class Texture {
 		loadCardSprites();
 	}
 	
-	
+	/*load every card sprite from the card sprite sheet*/
 	private void loadCardSprites() {
 		cardSprites = new BufferedImage[2000];
 		BufferedImage cardSheetImage = loader.loadImage("dueling_images", "card sprite sheet.png");

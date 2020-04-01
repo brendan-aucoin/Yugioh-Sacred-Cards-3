@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *is the main thread of the game that updates and renders everything
+ */
 package game;
 
 import java.awt.Color;
@@ -8,11 +13,12 @@ import java.awt.image.BufferStrategy;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Scanner;
 
 import boards.RegularBoard;
 import cards.Card;
+import cards.CardHandler;
+import cards.CardList;
 import cards.ChangeOfHeart;
 import cards.Doron;
 import cards.FlameViper;
@@ -37,7 +43,7 @@ import states.MainMenuState;
 import states.StateManager;
 
 public class Game  implements Runnable{
-	//static variables
+	//static variables for the file paths
 	public static final String DUELING_IMAGES = "/dueling_images/";
 	public static final String TITLE = "Sacred Cards 3";
 	public static final String CARD_STATS = "cardStats.txt";
@@ -57,6 +63,8 @@ public class Game  implements Runnable{
 	private MainMenuState mainMenu;
 	private DuelingState duelingState;
 	
+	//cards
+	private CardHandler cardHandler;
 	//get rid of 
 	private RegularBoard board;
 	private Player player;
@@ -67,10 +75,16 @@ public class Game  implements Runnable{
 	
 	public Game() {
 		running = false;
+		//initialize all the objects for states and managers
 		display = new Display();
+		
 		stateManager = new StateManager();
 		imageLoader = new BufferedImageLoader();
+		mouseManager = new MouseManager(stateManager);
+		texture = new Texture();
+		cardHandler = new CardHandler();
 		mainMenu = new MainMenuState(this);
+		
 		//get rid of
 		board = new RegularBoard(this);
 		duelingState = new DuelingState(this);
@@ -78,70 +92,27 @@ public class Game  implements Runnable{
 		player = new Player("Brendan");
 		opponent = new Ai(duelingState,"Opponent");
 		
-
+		//get rid of
 		duelingState.setPlayer(player);
 		duelingState.setBoard(board);
 		duelingState.setHandBounds();
-		
-		//get rid of
 		duelingState.setOpponent(opponent);
 		
-		mouseManager = new MouseManager(stateManager);
-		texture = new Texture();
-		
-		//get rid of
-		
-		baseDeck = new Deck("Base Deck");
-		allCards = new ArrayList<Card>();
-		try {
-		allCards.add(new Doron());
-		allCards.add(new WaterOmotics());
-		allCards.add(new FlameViper());
-		allCards.add(new SwordsmanOfLandstar());
-		allCards.add(new TheLegendaryFisherman());
-		allCards.add(new ChangeOfHeart());
-		allCards.add(new TrapHole());
-		allCards.add(new MysticalSpaceTyphoon());
-		allCards.add(new GaiaTheFierceKnight());
-		allCards.add(new HarpiesPetBabyDragon());
-		allCards.add(new RightLegOfTheForbiddenOne());
-		allCards.add(new ObeliskTheTormentor());
-		
-		}catch(FileNotFoundException e) {
-			System.out.println("file not found for creating card stats");
-		}
 		
 		Deck tempDeck = new Deck("Temp deck");
-		File tempDeckFile = new File(TEXTS_PATH + "temp base deck.txt");
-		LinkedList<Card> baseDeck = new LinkedList<Card>();
 		try {
-			Scanner tempDeckScanner = new Scanner(tempDeckFile);
-			while(tempDeckScanner.hasNextLine()) {
-				String line  = tempDeckScanner.nextLine();
-				for(int i =0; i < allCards.size();i++) {
-					String cardName = allCards.get(i).getName().replace(" ", "_");
-					if(line.equalsIgnoreCase(cardName)) {
-						baseDeck.add(allCards.get(i));
-					}
-				}
-			}
-			
+			tempDeck.createDeck(TEXTS_PATH + "temp base deck.txt");
 		} catch (FileNotFoundException e) {
-			System.out.println("couldnt load base deck");
+			System.err.println("COULD NOT LOAD FILE");
+			System.exit(0);
 		}
-		tempDeck.setDeck(baseDeck);
 		player.setDeck(tempDeck);
 		opponent.setDeck(tempDeck);
-		for(Card c : opponent.getDeck().getDeck()) {
-			//System.out.println(c);
-		}
-		
 		player.shuffle();
 		opponent.shuffle();
-		
-	
 	}
 	
+	/*add all the input listeners and sets starting state of the game*/
 	private void init() {
 		/*set up all the mouse stuff and keyboard stuff*/
 		display.getCanvas().addMouseListener(mouseManager);
@@ -158,17 +129,14 @@ public class Game  implements Runnable{
 	
 		
 		display.getFrame().setVisible(true);
-		createBaseDeck();
 	}
 	
-	private void createBaseDeck() {
-		
-	}
-	
+	/*update the current state help in the state manager*/
 	public void update() {
 		stateManager.getState().update();
 	}
 	
+	/*render the current state in the state manager*/
 	public void render() {
 		BufferStrategy bs = display.getCanvas().getBufferStrategy();
 		if(bs == null){display.getCanvas().createBufferStrategy(3);return;}
@@ -182,11 +150,10 @@ public class Game  implements Runnable{
 		stateManager.getState().render(g2d);
 		g.dispose();
 		bs.show();
-		
 	}
 	
 	
-	
+	/*make the game 60fps */
 	public void run() {
 		init();
 		int fps = 60;
@@ -218,14 +185,14 @@ public class Game  implements Runnable{
 		stop();
 	}
 	
-	
+	/*start the game*/
 	public synchronized void start() {
 		if(running) {return;}
 		running = true;
 		thread = new Thread(this);
 		thread.start();
 	}
-	
+	/*stop the game*/
 	public synchronized void stop() {
 		if(!running) {return;}
 		running = false;
@@ -236,6 +203,7 @@ public class Game  implements Runnable{
 		}
 	}
 	
+	/*some other classes need access to the image loader which the game has. instead of creating a new image loader*/
 	public BufferedImageLoader getImageLoader() {
 		return imageLoader;
 	}

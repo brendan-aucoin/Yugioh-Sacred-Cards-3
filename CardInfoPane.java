@@ -1,3 +1,8 @@
+/*
+ *Brendan Acoin
+ *07/06/2019
+ *the box at the bottom displaying the info of the card, the name, the stats, and the type, etc
+ * */
 package dueling;
 
 import java.awt.AlphaComposite;
@@ -7,7 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 
 import cards.Card;
@@ -35,7 +39,7 @@ public class CardInfoPane extends EffectPane{
 		
 		init();
 	}
-	
+	/*sets all the variables to the default*/
 	public void init() {
 		super.init();
 		backgroundAlpha = 0.52f;
@@ -56,6 +60,7 @@ public class CardInfoPane extends EffectPane{
 		attributeText = "";
 	}
 	
+	/*if the display card is not null then render all the cards info and render the bounds*/
 	public void render(Graphics2D g) {
 		g.setColor(new Color(119,136,153));
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,backgroundAlpha));
@@ -71,6 +76,7 @@ public class CardInfoPane extends EffectPane{
 		}
 	}
 	
+	/*displays the name of the card*/
 	private void renderName(Graphics2D g) {
 		String displayName = displayCard.getName();
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1));
@@ -80,7 +86,7 @@ public class CardInfoPane extends EffectPane{
 		g.drawString(displayName, getBounds().x + getBounds().width/60
 		, getBounds().y + (int)(g.getFont().getStringBounds(displayName, frc).getHeight()));
 	}
-	
+	/*displays the attack and defense stat*/
 	private void renderStats(Graphics2D g) {
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("ariel",Font.PLAIN,18));
@@ -96,8 +102,9 @@ public class CardInfoPane extends EffectPane{
 		}
 		
 	}
-	
+	/*displays the attribute of the card*/
 	private void renderAttribute(Graphics2D g) {
+		//if the card is a monster then get the abbreiation of the monsters attribute
 		if(displayCard instanceof Monster) {
 			Monster displayMonster = (Monster)displayCard;
 			switch(displayMonster.getAttribute()) {
@@ -155,11 +162,12 @@ public class CardInfoPane extends EffectPane{
 			}
 		}
 		
+		//if its a magic card then find out if its a spell or trap
 		else if (displayCard instanceof MagicCard) {
 			g.setColor(new Color(0,102,0));
 			attributeText = displayCard.getType() == CardType.SPELL ? "SPELL": "TRAP";
 		}
-		
+		//display the text
 		g.fill(attributeBounds);
 		attributeTextColour = displayCard instanceof MagicCard ? new Color(199,21,133):Color.WHITE;
 		g.setColor(attributeTextColour);
@@ -170,6 +178,7 @@ public class CardInfoPane extends EffectPane{
 				);
 		
 	}
+	//display the two icons
 	private void renderIcons(Graphics2D g) {
 		if(displayCard instanceof Monster) {
 		g.drawImage(swordIconImage,swordIconBounds.x,swordIconBounds.y,
@@ -181,6 +190,7 @@ public class CardInfoPane extends EffectPane{
 	}
 	
 	@Override
+	/*determine which list to loop through based on if you mouse is over your hand, or which players field*/
 	public void mouseMoved(MouseEvent e) {
 		super.mouseMoved(e);
 		if(mouseOver(getDuelingState().getPlayer().getHand().getBounds())) {
@@ -195,14 +205,13 @@ public class CardInfoPane extends EffectPane{
 			spotList =  getDuelingState().getBoard().getOpponentField().allCardSpots();
 		}
 		if(spotList == null) {return;}
-		
+		//loop through that spot list and find out which spot you are hovering over and set the display card to whatever card you find
 		for(int i=0; i < spotList.size();i++) {
 			Spot spot = spotList.get(i);
 			if(mouseOver(spot.getBounds()) && !spot.isOpen()) {
 				displayCard = spot.getCard();
 			}
 		}
-	//	spotList = null;
 	}
 	
 }

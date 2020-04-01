@@ -1,10 +1,15 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *An effect card that changes the board to a water board
+ */
 package cards;
 
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import player.Player;
-import states.DuelingState;
+import boards.Board;
+import player.Duelist;
 
 public class TheLegendaryFisherman extends EffectMonster{
 	public TheLegendaryFisherman() throws FileNotFoundException {
@@ -12,13 +17,14 @@ public class TheLegendaryFisherman extends EffectMonster{
 	}
 
 	@Override
-	public void effect(DuelingState duelingState, Player player, Player opponent) {
+	/*sets the board of the dueling state to a new type of board then loop through all monsters on field and buff them individually*/
+	public void effect(Duelist player,Duelist opponent,Board board) {
 		
 	}
 	
 	
 	@Override
 	public String effectText() {
-		return "";
+		return "Board becomes a Water element";
 	}
 }

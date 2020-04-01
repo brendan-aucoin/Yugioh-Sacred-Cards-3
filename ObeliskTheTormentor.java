@@ -1,10 +1,15 @@
+/*
+ *Brendan Aucoin
+ *06/30/2019
+ *A God Card that makes every monster on the opponents field have 0 attack and 0 defense
+ */
 package cards;
 
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import player.Player;
-import states.DuelingState;
+import boards.Board;
+import player.Duelist;
 
 public class ObeliskTheTormentor extends EffectMonster{
 	public ObeliskTheTormentor() throws FileNotFoundException {
@@ -12,13 +17,14 @@ public class ObeliskTheTormentor extends EffectMonster{
 	}
 
 	@Override
-	public void effect(DuelingState duelingState, Player player, Player opponent) {
+	/*loop through opponents monsters and set all their attack and defense stats to 0*/
+	public void effect(Duelist player,Duelist opponent,Board board) {
 		
 	}
 	
 	@Override
 	public String effectText() {
-		return "";
+		return "Sets atk and def of all opponents monsters to 0.";
 	}
 	
 }
