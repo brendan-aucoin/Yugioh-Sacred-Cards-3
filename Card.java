@@ -14,7 +14,7 @@ import game.Game;
 import images.Texture;
 import types.CardType;
 
-public abstract class Card implements Cloneable{
+public abstract class Card implements Cloneable, Comparable<Card>{
 	private BufferedImage image;
 	private String name;
 	private int capacity;//how much deck capacity they take up
@@ -94,7 +94,13 @@ public abstract class Card implements Cloneable{
     public Card clone() throws CloneNotSupportedException 
     { 
         return (Card) super.clone(); 
-    } 
+    }
+	@Override
+	public int compareTo(Card c) {
+		if(this.cardId > c.cardId) {return 1;}
+		else if(this.cardId < c.cardId) {return -1;}
+		else {return 0;}
+	}
 	
 	/*getters and setters*/
 	public BufferedImage getImage() {return image;}
@@ -115,5 +121,6 @@ public abstract class Card implements Cloneable{
 	public void setUsedAction(boolean usedAction) {this.usedAction = usedAction;}
 	public void setMaxFrequency(int maxFrequency) {this.maxFrequency = maxFrequency;}
 	public int getMaxFrequency() {return maxFrequency;}
+
 	
 }

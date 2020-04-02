@@ -23,6 +23,7 @@ public class ActionHandler {
 		actions.put(ActionList.ACTIVATE_SPELL,new ActivateSpellAction());
 		actions.put(ActionList.END_TURN, new EndTurnAction());
 		actions.put(ActionList.REMOVE_CARD, new RemoveCardAction());
+		actions.put(ActionList.START_TURN,new StartTurnAction());
 	}
 	/*returns an action based on the action list enum you pass in*/
 	public Action getAction(ActionList action) {

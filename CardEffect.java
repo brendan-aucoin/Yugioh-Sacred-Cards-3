@@ -5,10 +5,10 @@
  */
 package card_effects;
 
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 
 public interface CardEffect {
-	public void effect(Duelist player,Duelist opponent,Board board);
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField);
 	public String effectText();
 }

@@ -16,4 +16,5 @@ public enum ActionList {
 	ACTIVATE_TRAP,
 	END_TURN,
 	REMOVE_CARD,
+	START_TURN,
 }

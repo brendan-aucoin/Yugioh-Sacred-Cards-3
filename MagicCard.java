@@ -7,8 +7,8 @@ package cards;
 
 import java.io.FileNotFoundException;
 
-import boards.Board;
 import card_effects.CardEffect;
+import dueling.Field;
 import player.Duelist;
 import types.CardType;
 
@@ -25,7 +25,7 @@ public abstract class MagicCard extends Card implements CardEffect{
 	public String toString() {
 		return super.toString();
 	}
-	
+	public abstract boolean playCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField);
 	@Override
     public MagicCard clone() throws CloneNotSupportedException 
     { 

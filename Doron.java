@@ -8,7 +8,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 
 public class Doron extends EffectMonster{
@@ -17,7 +17,7 @@ public class Doron extends EffectMonster{
 	}
 
 	@Override
-	public void effect(Duelist player,Duelist opponent,Board board) {
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		
 	}
 

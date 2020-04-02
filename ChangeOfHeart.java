@@ -7,7 +7,7 @@ package cards;
 
 import java.io.FileNotFoundException;
 
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 import types.CardType;
 
@@ -18,7 +18,7 @@ public class ChangeOfHeart extends MagicCard{
 	}
 
 	@Override
-	public void effect(Duelist player,Duelist opponent,Board board) {
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		
 	}
 
@@ -29,4 +29,7 @@ public class ChangeOfHeart extends MagicCard{
 		return "Take Opponents monster";
 	}
 
+	public boolean playCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+		return opponentField.getMonsterCards().size() >= 1;
+	}
 }

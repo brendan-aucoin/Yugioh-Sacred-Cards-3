@@ -7,8 +7,11 @@ package dueling;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import cards.Card;
+import cards.CompareByAttack;
+import cards.CompareByDefense;
 import cards.MagicCard;
 import cards.Monster;
 
@@ -17,24 +20,24 @@ public class Field {
 	private ArrayList<Spot> monsterSpots;
 	private ArrayList<Spot> magicSpots;
 	private Rectangle bounds;
-	private ArrayList<Card> monsterCards;
-	private ArrayList<Card> magicCards;
+	private ArrayList<Monster> monsterCards;
+	private ArrayList<MagicCard> magicCards;
 	public Field(Rectangle bounds) {
 		field = new ArrayList<Card>();
 		monsterSpots = new ArrayList<Spot>();
 		magicSpots = new ArrayList<Spot>();
-		monsterCards = new ArrayList<Card>();
-		magicCards = new ArrayList<Card>();
+		monsterCards = new ArrayList<Monster>();
+		magicCards = new ArrayList<MagicCard>();
 		this.bounds = bounds;
 	}
 	
 	public void addCardToField(Card c) {
 		field.add(c);
 		if(c instanceof Monster) {
-			monsterCards.add(c);
+			monsterCards.add((Monster)c);
 		}
 		else if(c instanceof MagicCard) {
-			magicCards.add(c);
+			magicCards.add((MagicCard)c);
 		}
 	}
 	public void removeCardFromField(Card c) {
@@ -78,7 +81,31 @@ public class Field {
 		return maxCard;
 	}
 	
+	public ArrayList<Monster> getSortedMonstersByAttack(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>(monsterCards);
+		Collections.sort(tempCards,new CompareByAttack());
+		return tempCards;
+	}
 	
+	public ArrayList<Monster> getSortedMonstersByDefense(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>(monsterCards);
+		Collections.sort(tempCards,new CompareByDefense());
+		return tempCards;
+	}
+	public ArrayList<Spot> getFilledMonsterSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
+		for(int i =0; i< monsterSpots.size(); i++) {
+			if(monsterSpots.get(i).getCard() != null) {
+				tempSpots.add(monsterSpots.get(i));
+			}
+		}
+		return tempSpots;
+	}
+	public ArrayList<Spot> getSortedMonsterSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getFilledMonsterSpots());
+		Collections.sort(tempSpots,new CompareSpotByCardAttack());
+		return tempSpots;
+	}
 	/*add a spot to the monster spots*/
 	public void addSpotToMonsters(Spot sp) {
 		monsterSpots.add(sp);
@@ -112,9 +139,8 @@ public class Field {
 	public Rectangle getBounds() {return bounds;}
 	public ArrayList<Card> getField() {return field;}
 	public void setField(ArrayList<Card> field) {this.field = field;}
-	public ArrayList<Card> getMonsterCards() {return monsterCards;}
-	public void setMonsterCards(ArrayList<Card> monsterCards) {this.monsterCards = monsterCards;}
-	public ArrayList<Card> getMagicCards() {return magicCards;}
-	public void setMagicCards(ArrayList<Card> magicCards) {this.magicCards = magicCards;}
-	
+	public void setMonsterCards(ArrayList<Monster> monsterCards) {this.monsterCards = monsterCards;}
+	public void setMagicCards(ArrayList<MagicCard> magicCards) {this.magicCards = magicCards;}
+	public ArrayList<Monster> getMonsterCards(){return monsterCards;}
+	public ArrayList<MagicCard> getMagicCards(){return magicCards;}
 }

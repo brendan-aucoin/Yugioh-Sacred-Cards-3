@@ -28,6 +28,7 @@ import cards.Monster;
 import dueling.ActivateCardPane;
 import dueling.CardInfoPane;
 import dueling.Deck;
+import dueling.Field;
 import dueling.Phase;
 import dueling.Spot;
 import dueling.StartTurnPhase;
@@ -203,6 +204,7 @@ public class DuelingState extends InteractionPane implements State{
 			//phase = Phase.AI_TURN;
 			//perform the action for switching turns here
 			actionHandler.getAction(ActionList.END_TURN).performAction(player,board.getPlayerField(),Phase.AI_TURN);
+			actionHandler.getAction(ActionList.START_TURN).performAction(opponent);
 		}
 		
 		activateCardPane.mousePressed(e);
@@ -549,6 +551,9 @@ public class DuelingState extends InteractionPane implements State{
 			}
 		}
 	}
+	
+	public Field getPlayerField() {return board.getPlayerField();}
+	public Field getOpponentField() {return board.getOpponentField();}
 	
 	/*getters and setters*/
 	public void setBoard(Board board) {this.board = board;}

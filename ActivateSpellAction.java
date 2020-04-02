@@ -20,10 +20,10 @@ public class ActivateSpellAction extends Action{
 	 * and then activates the spells effect and removes it from the board
 	 * */
 	@Override
-	public void performAction(MagicCard magicCard,Duelist player,Duelist opponent,Board board,Spot spellSpot,Field field,TextPopupPane textPopupPane) {	
+	public void performAction(MagicCard magicCard,Duelist player,Duelist opponent,Board board,Field playerField,Field opponentField,Spot spellSpot,TextPopupPane textPopupPane) {	
 				textPopupPane.startNew(magicCard.effectText(),MagicCard.TEXT_POPUP_TIME);
-				DuelingState.actionHandler.getAction(ActionList.REMOVE_CARD).performAction(spellSpot,board,field);
-				magicCard.effect(player,opponent,board);
+				DuelingState.actionHandler.getAction(ActionList.REMOVE_CARD).performAction(spellSpot,board,playerField);
+				magicCard.effect(player,opponent,playerField,opponentField);
 		
 	}
 }

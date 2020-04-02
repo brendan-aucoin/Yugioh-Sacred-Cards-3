@@ -10,8 +10,6 @@ import java.io.FileNotFoundException;
 
 import attributes.Attribute;
 import card_effects.CardEffect;
-import player.Player;
-import states.DuelingState;
 
 public abstract class EffectMonster extends Monster implements CardEffect{//extends the monster class and implements the CardEffect interface
 	private boolean usedEffect;

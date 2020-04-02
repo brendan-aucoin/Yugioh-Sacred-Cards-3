@@ -84,6 +84,13 @@ public class Deck extends CardHolder{
 		return size() == 0;
 	}
 	
+	public String toString() {
+		String result = "";
+		for(int i =0; i < this.getDeck().size();i++) {
+			result += getDeck().get(i).getName() + "\n";
+		}
+		return result;
+	}
 	/*getters and setters*/
 	public String getName() {return name;}
 	public void setName(String name) {this.name = name;}

@@ -24,7 +24,6 @@ public class PlayCardAction extends Action{
 	/*loop through whichever dragged spot list is initialized 
 	 * if you mouse is inside the bounds then summon that card */
 	private void playCardFromHand(Duelist player,Spot handSpot,Spot boardSpot,Board board,Field field) {
-		//Card newCard = handSpot.getCard() instanceof Monster ? new Monster((Monster)handSpot.getCard()) : new MagicCard((MagicCard)handSpot.getCard());
 		boolean playedCard = summonCard(handSpot.getCard(),boardSpot,board,player,field);
 		if(playedCard) {
 			setPlayedCard(player,handSpot.getCard());
@@ -41,6 +40,7 @@ public class PlayCardAction extends Action{
 	/*if the spot is open and the card is a monster and the tribute cost is <= to how many tributes you have
 	 * set the players current tribute cost and set the card on the spot and add it to the proper lists and buff the card*/
 	public boolean summonCard(Card card,Spot boardSpot,Board board,Duelist player,Field field) {
+			//if(player.hasPlayedCard()) {return false;}
 			if(boardSpot.isOpen()) {
 				if(card instanceof Monster) {
 					Monster monster = (Monster)card;

@@ -8,7 +8,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 
 public class ObeliskTheTormentor extends EffectMonster{
@@ -18,7 +18,7 @@ public class ObeliskTheTormentor extends EffectMonster{
 
 	@Override
 	/*loop through opponents monsters and set all their attack and defense stats to 0*/
-	public void effect(Duelist player,Duelist opponent,Board board) {
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		
 	}
 	

@@ -10,8 +10,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import cards.Card;
+import cards.CompareByAttack;
+import cards.MagicCard;
+import cards.Monster;
 
 public class Hand {
 	private ArrayList<Card> hand;
@@ -76,7 +80,65 @@ public class Hand {
 			g.draw(spots.get(i).getBounds());
 		}
 	}
+	public ArrayList<Monster> getMonsters(){
+		ArrayList<Monster> monsters = new ArrayList<Monster>();
+		for(int i =0; i < spots.size();i++) {
+			if(spots.get(i).getCard() instanceof Monster) {
+				Monster m = (Monster)spots.get(i).getCard();
+				monsters.add(m);
+			}
+		}
+		return monsters;
+	}
+	public ArrayList<Spot> getMonsterSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
+		for(int i =0; i < spots.size();i++) {
+			if(spots.get(i).getCard() instanceof Monster) {
+				tempSpots.add(spots.get(i));
+			}
+		}
+		return tempSpots;
+	}
 	
+	public ArrayList<Monster> getMonstersSortedByAttack(){
+		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(getMonsters());
+		Collections.sort(tempMonsters,new CompareByAttack());
+		return tempMonsters;
+	}
+
+	public ArrayList<Monster> getMonstersSortedByAttack(ArrayList<Monster> monsters){
+		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(monsters);
+		Collections.sort(tempMonsters,new CompareByAttack());
+		return tempMonsters;
+	}
+	
+	public ArrayList<Spot> getMonsterSpotsSortedByAttack(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getMonsterSpots());
+		Collections.sort(tempSpots,new CompareSpotByCardAttack());
+		return tempSpots;
+	}
+	public ArrayList<Spot> getMonsterSpotsSortedByAttack(ArrayList<Spot> spots){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(spots);
+		Collections.sort(tempSpots,new CompareSpotByCardAttack());
+		return tempSpots;
+	}
+	public ArrayList<MagicCard> getMagicCards(){
+		ArrayList<MagicCard> magics = new ArrayList<MagicCard>();
+		for(int i =0; i < hand.size();i++) {
+			if(hand.get(i) instanceof MagicCard) {
+				MagicCard m = (MagicCard)hand.get(i);
+				magics.add(m);
+			}
+		}
+		return magics;
+	}
+	
+	public Card get(int i) {
+		return hand.get(i);
+	}
+	public int size() {
+		return hand.size();
+	}
 	/*getters and setters*/
 	public ArrayList<Card> getHand() {return hand;}
 	public void setHand(ArrayList<Card> hand) {this.hand = hand;}

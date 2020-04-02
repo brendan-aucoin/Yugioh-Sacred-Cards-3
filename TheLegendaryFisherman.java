@@ -8,7 +8,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 
 public class TheLegendaryFisherman extends EffectMonster{
@@ -18,7 +18,7 @@ public class TheLegendaryFisherman extends EffectMonster{
 
 	@Override
 	/*sets the board of the dueling state to a new type of board then loop through all monsters on field and buff them individually*/
-	public void effect(Duelist player,Duelist opponent,Board board) {
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		
 	}
 	

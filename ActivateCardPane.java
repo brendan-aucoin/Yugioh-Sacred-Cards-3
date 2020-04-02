@@ -146,7 +146,8 @@ public class ActivateCardPane extends EffectPane{
 			if(mouseOver(spot.getBounds())) {
 				if(spot.getCard() instanceof MagicCard && spot.getCard().getType() == CardType.SPELL) {
 					MagicCard spell = (MagicCard)spot.getCard();
-					DuelingState.actionHandler.getAction(ActionList.ACTIVATE_SPELL).performAction(spell, getDuelingState().getPlayer(), getDuelingState().getOpponent(), getDuelingState().getBoard(),spot,getDuelingState().getBoard().getPlayerField(),textPopupPane);
+					DuelingState.actionHandler.getAction(ActionList.ACTIVATE_SPELL).performAction(spell, getDuelingState().getPlayer(), getDuelingState().getOpponent(), getDuelingState().getBoard()
+						,getDuelingState().getPlayerField(),getDuelingState().getOpponentField(),spot,textPopupPane);
 				}
 			}
 		}
@@ -172,7 +173,7 @@ public class ActivateCardPane extends EffectPane{
 		}
 		
 		else if(mouseOver(effectBounds)) {
-			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(card,getDuelingState().getPlayer(),getDuelingState().getOpponent(),getDuelingState().getBoard());
+			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(card,getDuelingState().getPlayer(),getDuelingState().getOpponent(),getDuelingState().getPlayerField(),getDuelingState().getOpponentField());
 		}
 		
 		displaying = false;

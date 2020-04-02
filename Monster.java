@@ -82,6 +82,17 @@ public abstract class Monster extends Card{
     { 
         return (Monster) super.clone(); 
     } 
+	
+	@Override
+	public int compareTo(Card c) {
+		if(c instanceof Monster) {
+			Monster m = (Monster)c;
+			if(this.attack > m.attack) {return 1;}
+			else if(this.attack<m.attack) {return -1;}
+			return 0;
+		}
+		return 0;
+	}
 	/*getters and setters*/
 	public int getAttack() {return attack;}
 	public void setAttack(int attack) {this.attack = attack;}

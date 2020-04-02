@@ -8,7 +8,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
-import boards.Board;
+import dueling.Field;
 import player.Duelist;
 
 public class HarpiesPetBabyDragon extends EffectMonster {
@@ -18,7 +18,7 @@ public class HarpiesPetBabyDragon extends EffectMonster {
 
 	@Override
 	/*this will search your field and checks each cards name except this one you can use basic == for this. but will check if the name contains harpie*/
-	public void effect(Duelist player,Duelist opponent,Board board) {
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		
 	}
 	
