@@ -162,6 +162,8 @@ public class ActivateCardPane extends EffectPane{
 			card.setInDefense(false);
 			
 			card.setUsedAction(true);
+			
+			card.setRevealed(true);
 		}
 		
 		else if(mouseOver(defenseBounds)) {

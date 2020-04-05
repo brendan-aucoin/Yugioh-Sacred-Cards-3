@@ -24,6 +24,7 @@ public class MonsterEffectAction extends Action{
 				effectCard.setUsedAction(true);
 				effectCard.setInDefense(false);
 				effectCard.setUsedEffect(true);
+				effectCard.setRevealed(true);
 			}
 		}
 	}

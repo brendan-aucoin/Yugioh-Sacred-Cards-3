@@ -45,7 +45,6 @@ public class DuelingState extends InteractionPane implements State{
 	private Duelist player;
 	private Ai opponent;
 	private Rectangle playerHandBounds,opponentHandBounds;
-	private BufferedImage backOfCardImage;
 	private StartTurnPhase startTurnPhase;
 	private ActivateCardPane activateCardPane;
 	private CardInfoPane cardInfoPane;
@@ -71,7 +70,6 @@ public class DuelingState extends InteractionPane implements State{
 	public void init() {
 		super.init();
 		opponent = null;
-		backOfCardImage = getGame().getImageLoader().loadImage("dueling_images", "backOfCard.png");
 		startTurnPhase = new StartTurnPhase(this,getGame());
 		cardInfoPane = new CardInfoPane(this,getGame());
 		activateCardPane = new ActivateCardPane(this,getGame());
@@ -169,10 +167,11 @@ public class DuelingState extends InteractionPane implements State{
 			opponent.update();
 			canScroll = false;
 		}
+		if(!canDrag) {draggedPoint = new Point();}//reset the point
 	}
 	/*checks if the game is over by seeing the health of both players*/
 	private boolean checkIfOver() {
-		return player.getHealth() <=0 || opponent.getHealth()<=0;
+		return player.getHealth() <=0 || player.getDeck().empty()  || opponent.getHealth()<=0 || opponent.getDeck().empty();
 	}
 	/*returns the player who won*/
 	private Duelist decideWinner() {
@@ -248,9 +247,9 @@ public class DuelingState extends InteractionPane implements State{
 	/*if you are dragging then try and play your card*/
 	public void mouseReleased(MouseEvent e) {
 		if(canDrag) {
-		if(draggedSpotList == null) {return;}
-		canDrag = false;
-		playCardFromHand();
+			if(draggedSpotList == null) {return;}
+			canDrag = false;
+			playCardFromHand();
 		}
 		
 	}
@@ -268,7 +267,7 @@ public class DuelingState extends InteractionPane implements State{
 		//set everything back to default
 		draggedSpot = null;
 		draggedSpotList = null;
-		draggedPoint = new Point();
+		draggedPoint = new Point(0,0);
 		draggingBounds = new Rectangle();
 	}
 	/*creates a point for your dragging when you move the mouse*/
@@ -324,6 +323,16 @@ public class DuelingState extends InteractionPane implements State{
 		renderEffectsOnHand(g);
 		renderEffectsOnBoard(g);
 	}
+	
+	/*renders all cards*/
+	private void renderAllCards(Graphics2D g) {
+		board.renderPlayersCards(g);
+		renderPlayerCardsInHand(g);
+		board.renderAiCards(g);
+		renderEffectsOnCards(g);
+	}
+	
+	
 	/*render the start turn pop up if it is that phase*/
 	private void renderGraphicalEffects(Graphics2D g) {
 		if(phase == Phase.START_TURN) {
@@ -459,70 +468,6 @@ public class DuelingState extends InteractionPane implements State{
 		//horizontal
 		g.drawLine(bounds.x + bounds.width -bounds.width/5,bounds.y + bounds.height + bounds.height/12,  bounds.x + bounds.width +  bounds.width/12,bounds.y + bounds.height + bounds.height/12);
 		
-	}
-	
-	/*renders all cards*/
-	private void renderAllCards(Graphics2D g) {
-		//the player field for monsters
-		renderMonstersOnBoard(g,board.getPlayerField().getMonsterSpots());
-		//the player field for magic
-		renderCardsInSpot(g,board.getPlayerField().getMagicSpots());
-		//the player field for hand
-		renderPlayerCardsInHand(g);
-		
-		//the opponent field for monsters
-		renderMonstersOnBoard(g,board.getOpponentField().getMonsterSpots());
-		//the opponent field for magic
-		renderCardsInSpot(g,board.getOpponentField().getMagicSpots());
-		
-		//the opponent field for hand
-		renderCardsInSpot(g, opponent.getHand().getSpots());//you dont want to see the opponents cards
-	//	renderOpponentCardsInHand(g);
-		
-		renderEffectsOnCards(g);
-	}
-	
-	/*render all cards in a list of spots*/
-	private void renderCardsInSpot(Graphics2D g,List<Spot> list) {
-		for(int i =0; i < list.size();i++) {
-			Spot s = list.get(i);
-			s.render(g);
-		}
-	}
-	/*render all the monsters on the board and makes sure its in defense and draws the proper image*/
-	private void renderMonstersOnBoard(Graphics2D g,List<Spot>spots) {
-		for(int i =0; i < spots.size();i++) {
-			Spot spot = spots.get(i);
-			if(spot.getCard() instanceof Monster) {
-				Monster monster = (Monster)spot.getCard();
-				if(monster.isInDefense()) {
-					// The required drawing location
-					int drawLocationX = spot.getBounds().x;
-					int drawLocationY = spot.getBounds().y - spot.getBounds().height/6;
-
-					// Rotation information
-
-					double rotationRequired = Math.toRadians (90);
-					double locationX = spot.getBounds().getWidth()/1.5;
-					double locationY = spot.getBounds().getHeight();
-					AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
-					AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-
-					// Drawing the rotated image at the required drawing locations
-					g.drawImage(op.filter(spot.getCard().getImage(), null), drawLocationX, drawLocationY, spot.getBounds().width,spot.getBounds().height, null);
-				}
-				else {
-					spot.render(g);
-				}
-			}
-		}
-	}
-	/*drawing the back of card image for all the opponents cards in their hand*/
-	private void renderOpponentCardsInHand(Graphics2D g) {
-		for(int i = 0; i < opponent.getHand().getSpots().size();i++) {
-			Spot spot = opponent.getHand().getSpots().get(i);
-			g.drawImage(backOfCardImage,spot.getBounds().x,spot.getBounds().y,spot.getBounds().width,spot.getBounds().height,null);
-		}
 	}
 	
 	/*renders all the cards in your hand*/

@@ -16,10 +16,12 @@ public abstract class MagicCard extends Card implements CardEffect{
 	public static final int TEXT_POPUP_TIME = 95;
 	public MagicCard(int cardId,CardType type) throws FileNotFoundException {
 		super(cardId,type);
+		setRevealed(false);
 	}
 	
 	public MagicCard(MagicCard c){
 		super(c);
+		setRevealed(false);
 	}
 	
 	public String toString() {

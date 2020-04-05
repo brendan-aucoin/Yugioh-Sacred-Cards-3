@@ -12,5 +12,8 @@ public class DefendAction extends Action{
 	public void performAction(Monster card) {
 		card.setInDefense(true);
 		card.setUsedAction(true);
+		if(card.isFirstTurn()) {
+			card.setRevealed(false);
+		}
 	}
 }

@@ -15,12 +15,11 @@ import types.CardType;
 public abstract class Monster extends Card{
 	private int attack;
 	private int defense;
-	private int tributeCost;
 	private boolean inDefense;//if they are set in defense mode for the turn
 	
 	private Attribute attribute;//only monsters have an attribute
 	private ArrayList<Attribute> weaknesses;//they might have multiple weaknesses like in pokemon
-	
+	private int tributeCost;
 	public Monster(int cardId,Attribute attribute) throws FileNotFoundException {
 		super(cardId,CardType.MONSTER);
 		this.attribute = attribute;
@@ -31,11 +30,12 @@ public abstract class Monster extends Card{
 		super(m);
 		this.attack = m.attack;
 		this.defense = m.defense;
-		this.tributeCost = m.tributeCost;
 		this.attribute = m.attribute;
 		this.weaknesses = m.weaknesses;
 		inDefense = false;
+		this.tributeCost = m.tributeCost;
 		weaknesses = new ArrayList<Attribute>();//initialize the weakneses list
+		determineWeaknesses();
 		//init();
 	}
 	
@@ -77,6 +77,9 @@ public abstract class Monster extends Card{
 		else if(attribute == Attribute.DIVINE) {weaknesses.add(Attribute.DIVINE);}
 	}
 	
+	public boolean weakTo(Attribute attribute) {
+		return (weaknesses.contains(attribute));
+	}
 	@Override
     public Monster clone() throws CloneNotSupportedException 
     { 
@@ -98,12 +101,12 @@ public abstract class Monster extends Card{
 	public void setAttack(int attack) {this.attack = attack;}
 	public int getDefense() {return defense;}
 	public void setDefense(int defense) {this.defense = defense;}
-	public int getTributeCost() {return tributeCost;}
-	public void setTributeCost(int tributeCost) {this.tributeCost = tributeCost;}
 	public boolean isInDefense() {return inDefense;}
 	public void setInDefense(boolean inDefense) {this.inDefense = inDefense;}
 	public Attribute getAttribute() {return attribute;}
 	public void setAttribute(Attribute attribute) {this.attribute = attribute;}
 	public ArrayList<Attribute> getWeaknesses() {return weaknesses;}
 	public void setWeaknesses(ArrayList<Attribute> weaknesses) {this.weaknesses = weaknesses;}
+	public int getTributeCost() {return tributeCost;}
+	public void setTributeCost(int tributeCost) {this.tributeCost = tributeCost;}
 }

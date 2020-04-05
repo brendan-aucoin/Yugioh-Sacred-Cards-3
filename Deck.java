@@ -43,16 +43,16 @@ public class Deck extends CardHolder{
 		}
 		return false;
 	}
-	
+	/*creates a deck based on the text in a file you give it the path too*/
 	public void createDeck(String filePath) throws FileNotFoundException{
 		File file = new File(filePath);
 		Scanner tempDeckScanner = new Scanner(file);
 		while(tempDeckScanner.hasNextLine()) {
 			String line  = tempDeckScanner.nextLine();
 			CardList cardName = CardList.valueOf(line.toUpperCase());
-			Card card = CardHandler.getCard(cardName);
 			try {
-				addCard(card.clone());
+				Card card = CardHandler.getCard(cardName);
+				addCard(card);
 			} catch (CloneNotSupportedException e) {
 				System.err.print("Card was not able to be created");
 				System.exit(0);

@@ -14,7 +14,6 @@ import types.CardType;
 public class TrapHole extends MagicCard{
 	public TrapHole() throws FileNotFoundException {
 		super(CardList.TRAP_HOLE.ordinal(),CardType.TRAP);
-		
 	}
 	
 	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {

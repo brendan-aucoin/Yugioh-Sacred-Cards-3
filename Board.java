@@ -13,13 +13,18 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 import cards.Card;
+import cards.Monster;
 import dueling.Field;
 import dueling.Spot;
 import game.Game;
 import gui.Display;
+import images.Texture;
 import player.Duelist;
 
 public abstract class Board {
@@ -35,6 +40,8 @@ public abstract class Board {
 	protected FontRenderContext frc;
 	private Duelist player,opponent;//you need access to the two players
 	private Rectangle playerEndTurnBounds,opponentEndTurnBounds;//the two buttons.
+	private AffineTransform tx;
+	private AffineTransformOp op;
 	public Board(Game game,BoardType type) {
 		this.game = game;
 		this.type = type;
@@ -109,6 +116,95 @@ public abstract class Board {
 		//the opponents monster and magic cards
 		renderSpots(g,opponentField.getMonsterSpots());
 		renderSpots(g,opponentField.getMagicSpots());
+	}
+	
+	
+	
+	public void renderPlayersCards(Graphics2D g) {
+		//the player field for monsters
+		renderMonstersOnBoard(g,getPlayerField().getMonsterSpots(),false);
+		
+		//the player field for magic
+		renderCardsInSpot(g,getPlayerField().getMagicSpots(),true);
+		//cannot render the hand becuase the hand needs to keep track of which card is being dragged
+	}
+	
+	public void renderAiCards(Graphics2D g) {
+		//the opponent field for monsters
+		renderMonstersOnBoard(g,getOpponentField().getMonsterSpots(),true);
+			
+		//the opponent field for magic
+		renderCardsInSpot(g,getOpponentField().getMagicSpots(),false);
+				
+		//the opponent field for hand
+		renderCardsInSpot(g, opponent.getHand().getSpots(),true);//you dont want to see the opponents cards
+	}
+	/*render all cards in a list of spots*/
+	private void renderCardsInSpot(Graphics2D g,List<Spot> list,boolean showCardImage) {
+		for(int i =0; i < list.size();i++) {
+			Spot s = list.get(i);
+			if(showCardImage) {
+				s.render(g);
+			}
+			else {
+				if(!s.isOpen()) {
+					g.drawImage(Texture.backOfCardImage,s.getBounds().x,s.getBounds().y,s.getBounds().width,s.getBounds().height,null);
+				}
+			}
+		}
+	}
+	
+	/*renders the card in defense mode*/
+	private void renderDefenseMonsterOnBoard(Graphics2D g,Spot spot,Monster monster,boolean aiCard) {
+		// The required drawing location
+		int drawLocationX = spot.getBounds().x;
+		int drawLocationY = spot.getBounds().y - spot.getBounds().height/6;
+
+		// Rotation information
+		double rotationRequired = Math.toRadians (90);
+		double locationX = spot.getBounds().getWidth()/1.5;
+		double locationY = spot.getBounds().getHeight();
+		tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
+		op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+		// Drawing the rotated image at the required drawing locations
+		BufferedImage renderImage = null;
+		if(aiCard) {
+			renderImage = spot.getCard().isRevealed() ? spot.getCard().getImage() : Texture.backOfCardImage;
+		}
+		else {
+			renderImage = spot.getCard().getImage();
+		}
+		g.drawImage(op.filter(renderImage,null), drawLocationX, drawLocationY, spot.getBounds().width,spot.getBounds().height, null);
+	}
+	/*render all the monsters on the board and makes sure its in defense and draws the proper image*/
+	private void renderMonstersOnBoard(Graphics2D g,List<Spot>spots,boolean aiField) {
+		for(int i =0; i < spots.size();i++) {
+			Spot spot = spots.get(i);
+			if(spot.getCard() instanceof Monster) {
+				Monster monster = (Monster)spot.getCard();
+				if(monster.isInDefense()) {
+					renderDefenseMonsterOnBoard(g,spot,monster,aiField);
+				}
+				else {
+					if(spot.getCard().isRevealed()) {
+						if(aiField) {
+							double rotationRequired = Math.toRadians (-180);
+							double locationX = spot.getBounds().getWidth()/1.707;
+							double locationY = spot.getBounds().getHeight()/1.21;
+							tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
+							op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+							g.drawImage(op.filter(spot.getCard().getImage(),null), spot.getBounds().x, spot.getBounds().y, spot.getBounds().width,spot.getBounds().height, null);
+						}
+						else {
+							spot.render(g);//only put this if you dont want to have the opponents cards facing you
+						}
+						
+						
+					}
+				}
+			}
+		}
 	}
 	/*draws the outline of a spot to the screen*/
 	private void renderSpots(Graphics2D g,ArrayList<Spot> spots) {

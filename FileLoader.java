@@ -1,11 +1,9 @@
-package file_loader;
-
-
 /*
 Brendan Aucoin
 11/03/17
 this class creates files, as well as writes and reads from files. which can be used in most contexts when using files.
 */
+package file_loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

@@ -56,6 +56,8 @@ public class PlayCardAction extends Action{
 				field.addCardToField(card);
 				boardSpot.setOpen(false);
 				board.buffCard(card);
+				card.setFirstTurn(true);
+				card.setRevealed(true);
 				return true;
 			}
 	

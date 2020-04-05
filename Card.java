@@ -25,7 +25,8 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	protected FileLoader fileLoader;
 	protected Scanner scanner;
 	private int maxFrequency;//how many of this card can appear in your deck. i.e you can only have 1 change of heart in your deck. but you can have 3 dorons.
-	
+	private boolean revealed;
+	private boolean firstTurn;
 	public Card(int cardId,CardType type) throws FileNotFoundException {//you must throw fileNotFoundException because all cards read from a text file to get their base stats
 		this.cardId = cardId;
 		this.type = type;
@@ -43,6 +44,7 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 		this.cardId = card.cardId;
 		fileLoader = new FileLoader();
 		this.maxFrequency = 3;
+		this.revealed = true;
 		//init();
 	}
 	
@@ -50,6 +52,8 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	private void init() throws FileNotFoundException {
 		usedAction = false;
 		fileLoader = new FileLoader();
+		this.revealed = true;
+		this.firstTurn = true;
 		fileLoader.setFileName(Game.TEXTS_PATH + Game.CARD_STATS);
 		createBaseStats();
 		normalizeName();
@@ -121,6 +125,10 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	public void setUsedAction(boolean usedAction) {this.usedAction = usedAction;}
 	public void setMaxFrequency(int maxFrequency) {this.maxFrequency = maxFrequency;}
 	public int getMaxFrequency() {return maxFrequency;}
+	public boolean isRevealed() {return revealed;}
+	public void setRevealed(boolean revealed) {this.revealed = revealed;}
+	public boolean isFirstTurn() {return firstTurn;}
+	public void setFirstTurn(boolean firstTurn) {this.firstTurn = firstTurn;}
 
 	
 }

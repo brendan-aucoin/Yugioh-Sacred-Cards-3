@@ -20,6 +20,7 @@ public class EndTurnAction extends Action {
 			if(c instanceof Monster) {
 				Monster monster = (Monster)c;
 				monster.setUsedAction(false);
+				monster.setFirstTurn(false);
 				if(monster instanceof EffectMonster) {
 					EffectMonster effectMonster = (EffectMonster)monster;
 					effectMonster.setUsedEffect(true);
@@ -29,6 +30,6 @@ public class EndTurnAction extends Action {
 		
 		currentPlayer.setPlayedCard(false);
 		currentPlayer.setNumTributes(0);
-		
+		//maybe immedietly start the next person phase using the start turn action.
 	}
 }

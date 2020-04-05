@@ -13,7 +13,7 @@ import player.Duelist;
 
 public class ObeliskTheTormentor extends EffectMonster{
 	public ObeliskTheTormentor() throws FileNotFoundException {
-		super(CardList.OBELISK_THE_TOREMENTOR.ordinal(),Attribute.DIVINE);
+		super(CardList.OBELISK_THE_TORMENTOR.ordinal(),Attribute.DIVINE);
 	}
 
 	@Override

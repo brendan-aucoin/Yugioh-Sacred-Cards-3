@@ -30,7 +30,8 @@ public class Field {
 		magicCards = new ArrayList<MagicCard>();
 		this.bounds = bounds;
 	}
-	
+	/*adds a card to the field and adds the card casted as a monster to the monsters list 
+	 * and the card casted as a magic card to the magic cards list*/
 	public void addCardToField(Card c) {
 		field.add(c);
 		if(c instanceof Monster) {
@@ -40,6 +41,7 @@ public class Field {
 			magicCards.add((MagicCard)c);
 		}
 	}
+	/*same thing as addCardToField but removing it from all 3 lists*/
 	public void removeCardFromField(Card c) {
 		field.remove(c);
 		if(c instanceof Monster) {
@@ -50,6 +52,7 @@ public class Field {
 		}
 	}
 	
+	/*returns the card with the highestAttack on the field*/
 	public Card getHighestAttackCard() {
 		int max = 0;
 		Card maxCard = null;
@@ -65,6 +68,7 @@ public class Field {
 		}
 		return maxCard;
 	}
+	/*returns the card with the highest defense on the field*/
 	public Card getHighestDefenseCard() {
 		int max = 0;
 		Card maxCard = null;
@@ -80,18 +84,30 @@ public class Field {
 		}
 		return maxCard;
 	}
-	
+	/*a sorted version of the monsters array based on attack*/
 	public ArrayList<Monster> getSortedMonstersByAttack(){
 		ArrayList<Monster> tempCards = new ArrayList<Monster>(monsterCards);
 		Collections.sort(tempCards,new CompareByAttack());
 		return tempCards;
 	}
 	
+	public ArrayList<Monster> getRevealedSortedMonstersByAttack(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>();
+		ArrayList<Monster> sortedMonsters = getSortedMonstersByAttack();
+		for(int i =0; i < sortedMonsters.size();i++) {
+			if(sortedMonsters.get(i).isRevealed()) {
+				tempCards.add(sortedMonsters.get(i));
+			}
+		}
+		return tempCards;		
+	}
+	/*a sorted version of the monsters array based on defense*/
 	public ArrayList<Monster> getSortedMonstersByDefense(){
 		ArrayList<Monster> tempCards = new ArrayList<Monster>(monsterCards);
 		Collections.sort(tempCards,new CompareByDefense());
 		return tempCards;
 	}
+	/*returns all the spots with monsters in them*/
 	public ArrayList<Spot> getFilledMonsterSpots(){
 		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
 		for(int i =0; i< monsterSpots.size(); i++) {
@@ -101,6 +117,7 @@ public class Field {
 		}
 		return tempSpots;
 	}
+	/*returns a sorted version of the spots array for all the monsters*/
 	public ArrayList<Spot> getSortedMonsterSpots(){
 		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getFilledMonsterSpots());
 		Collections.sort(tempSpots,new CompareSpotByCardAttack());

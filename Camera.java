@@ -19,6 +19,7 @@ public class Camera
 		this.x = cam.x;
 		this.y = cam.y;
 	}
+	//in this game you only update the y axis
 	public void update(float index)
 	{
 		y = -index;

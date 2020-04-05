@@ -14,6 +14,7 @@ import java.util.Collections;
 
 import cards.Card;
 import cards.CompareByAttack;
+import cards.CompareByDefense;
 import cards.MagicCard;
 import cards.Monster;
 
@@ -80,6 +81,7 @@ public class Hand {
 			g.draw(spots.get(i).getBounds());
 		}
 	}
+	/*returns a list of monsters in your hand*/
 	public ArrayList<Monster> getMonsters(){
 		ArrayList<Monster> monsters = new ArrayList<Monster>();
 		for(int i =0; i < spots.size();i++) {
@@ -90,6 +92,7 @@ public class Hand {
 		}
 		return monsters;
 	}
+	/*returns a list of spots where all the spots contain a monster*/
 	public ArrayList<Spot> getMonsterSpots(){
 		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
 		for(int i =0; i < spots.size();i++) {
@@ -99,38 +102,79 @@ public class Hand {
 		}
 		return tempSpots;
 	}
-	
+	/*a sorted version of all the monsters in your hand. from highest attack to lowest attack*/
 	public ArrayList<Monster> getMonstersSortedByAttack(){
 		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(getMonsters());
 		Collections.sort(tempMonsters,new CompareByAttack());
 		return tempMonsters;
 	}
 
+	/*a sorted version of all the monsters in your hand. from highest attack to lowest attack. but you can pass in any monsters array*/
 	public ArrayList<Monster> getMonstersSortedByAttack(ArrayList<Monster> monsters){
 		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(monsters);
 		Collections.sort(tempMonsters,new CompareByAttack());
 		return tempMonsters;
 	}
-	
+	/*a list of spots in sorted order where all the monsters are. this is to keep track of the current spot for whatever monster your working on*/
 	public ArrayList<Spot> getMonsterSpotsSortedByAttack(){
 		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getMonsterSpots());
 		Collections.sort(tempSpots,new CompareSpotByCardAttack());
 		return tempSpots;
 	}
+	/*a list of spots in sorted order where all the monsters are. this is to keep track of the current spot for whatever monster your working on
+	 * but you can use any spots array*/
 	public ArrayList<Spot> getMonsterSpotsSortedByAttack(ArrayList<Spot> spots){
 		ArrayList<Spot> tempSpots = new ArrayList<Spot>(spots);
 		Collections.sort(tempSpots,new CompareSpotByCardAttack());
 		return tempSpots;
 	}
+	
+	/*a sorted version of all the monsters in your hand. from highest attack to lowest attack*/
+	public ArrayList<Monster> getMonstersSortedByDefense(){
+		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(getMonsters());
+		Collections.sort(tempMonsters,new CompareByDefense());
+		return tempMonsters;
+	}
+	
+	/*a sorted version of all the monsters in your hand. from highest attack to lowest attack*/
+	public ArrayList<Monster> getMonstersSortedByDefense(ArrayList<Monster> monsterList){
+		ArrayList<Monster> tempMonsters = new ArrayList<Monster>(monsterList);
+		Collections.sort(tempMonsters,new CompareByDefense());
+		return tempMonsters;
+	}
+	
+	public ArrayList<Spot> getMonsterSpotsSortedByDefense(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getMonsterSpots());
+		Collections.sort(tempSpots,new CompareSpotByCardDefense());
+		return tempSpots;
+	}
+	
+	public ArrayList<Spot> getMonsterSpotsSortedByDefense(ArrayList<Spot> monsterSpots){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(monsterSpots);
+		Collections.sort(tempSpots,new CompareSpotByCardDefense());
+		return tempSpots;
+	}
+	
+	/*returns a list of all the magic cards in your hand*/
 	public ArrayList<MagicCard> getMagicCards(){
 		ArrayList<MagicCard> magics = new ArrayList<MagicCard>();
-		for(int i =0; i < hand.size();i++) {
-			if(hand.get(i) instanceof MagicCard) {
-				MagicCard m = (MagicCard)hand.get(i);
+		for(int i =0; i < spots.size();i++) {
+			if(spots.get(i).getCard() instanceof MagicCard) {
+				MagicCard m = (MagicCard)spots.get(i).getCard();
 				magics.add(m);
 			}
 		}
 		return magics;
+	}
+	
+	public ArrayList<Spot> getMagicCardsSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
+		for(int i=0;i < spots.size(); i++) {
+			if(spots.get(i).getCard() instanceof MagicCard) {
+				tempSpots.add(spots.get(i));
+			}
+		}
+		return tempSpots;
 	}
 	
 	public Card get(int i) {

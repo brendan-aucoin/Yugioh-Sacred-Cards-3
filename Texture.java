@@ -11,7 +11,7 @@ public class Texture {
 	
 	private BufferedImageLoader loader;
 	public static BufferedImage [] cardSprites;
-	
+	public static BufferedImage backOfCardImage;
 	public Texture() {
 		loader = new BufferedImageLoader();
 		loadCardSprites();
@@ -19,6 +19,7 @@ public class Texture {
 	
 	/*load every card sprite from the card sprite sheet*/
 	private void loadCardSprites() {
+		backOfCardImage = loader.loadImage("dueling_images", "backOfCard.png");
 		cardSprites = new BufferedImage[2000];
 		BufferedImage cardSheetImage = loader.loadImage("dueling_images", "card sprite sheet.png");
 		SpriteSheet cardSheet = new SpriteSheet(cardSheetImage);

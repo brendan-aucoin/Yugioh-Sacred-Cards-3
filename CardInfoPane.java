@@ -30,6 +30,7 @@ public class CardInfoPane extends EffectPane{
 	private Rectangle swordIconBounds,shieldIconBounds,attributeBounds;
 	private String attributeText;
 	private Color attributeTextColour;
+	private boolean aiMagicField;
 	public CardInfoPane(DuelingState duelingState,Game game) {
 		super(game,
 			new Rectangle(
@@ -43,6 +44,7 @@ public class CardInfoPane extends EffectPane{
 	public void init() {
 		super.init();
 		backgroundAlpha = 0.52f;
+		aiMagicField = false;
 		displayCard = null;
 		spotList = null;
 		swordIconImage = getGame().getImageLoader().loadImage("dueling_images","swordIcon.png");
@@ -111,53 +113,64 @@ public class CardInfoPane extends EffectPane{
 			case LIGHT:
 				g.setColor(new Color(224,255,255));
 				attributeText = "LGT";
+				attributeTextColour = Color.BLACK;
 				break;
 			case DARK:
 				g.setColor(Color.BLACK);
 				attributeText = "DARK";
+				attributeTextColour = Color.WHITE;
 				break;
 				
 			case FIEND:
 				g.setColor(new Color(139,0,139));
 				attributeText = "FND";
+				attributeTextColour = Color.WHITE;
 				break;
 			case DREAM:
 				g.setColor(new Color(216,191,216));
 				attributeText = "DRM";
+				attributeTextColour = Color.BLACK;
 				break;
 				
 			case FIRE:
 				g.setColor(new Color(204,0,0));
 				attributeText = "FIRE";
+				attributeTextColour = Color.WHITE;
 				break;
 			
 			case GRASS:
 				g.setColor(new Color(0,204,0));
 				attributeText = "FOR";
+				attributeTextColour = Color.WHITE;
 				break;
 				
 			case WATER:
 				g.setColor(new Color(0,0,204));
 				attributeText = "WAT";
+				attributeTextColour = Color.WHITE;
 				break;
 			case ELECTRIC:
 				g.setColor(new Color(255,255,0));
 				attributeText = "THR";
+				attributeTextColour = Color.WHITE;
 				break;
 				
 			case EARTH:
 				g.setColor(new Color(139,69,19));
 				attributeText = "ERT";
+				attributeTextColour = Color.WHITE;
 				break;
 				
 			case WIND:
 				g.setColor(new Color(127,255,212));
 				attributeText = "WND";
+				attributeTextColour = Color.BLACK;
 				break;
 				
 			case DIVINE:
 				g.setColor(new Color(75,0,130));
 				attributeText = "DIV";
+				attributeTextColour = Color.WHITE;
 				break;
 			}
 		}
@@ -166,10 +179,11 @@ public class CardInfoPane extends EffectPane{
 		else if (displayCard instanceof MagicCard) {
 			g.setColor(new Color(0,102,0));
 			attributeText = displayCard.getType() == CardType.SPELL ? "SPELL": "TRAP";
+			if(aiMagicField) {attributeText = "MAG";}
 		}
 		//display the text
 		g.fill(attributeBounds);
-		attributeTextColour = displayCard instanceof MagicCard ? new Color(199,21,133):Color.WHITE;
+		attributeTextColour = displayCard instanceof MagicCard ? new Color(199,21,133):attributeTextColour;
 		g.setColor(attributeTextColour);
 		g.setFont(new Font("ariel",Font.PLAIN,20));
 		g.drawString(attributeText,
@@ -193,6 +207,7 @@ public class CardInfoPane extends EffectPane{
 	/*determine which list to loop through based on if you mouse is over your hand, or which players field*/
 	public void mouseMoved(MouseEvent e) {
 		super.mouseMoved(e);
+		aiMagicField = false;
 		if(mouseOver(getDuelingState().getPlayer().getHand().getBounds())) {
 			spotList =  getDuelingState().getPlayer().getHand().getSpots();
 			
@@ -203,6 +218,7 @@ public class CardInfoPane extends EffectPane{
 		}
 		else if(mouseOver(getDuelingState().getBoard().getOpponentField().getBounds())) {
 			spotList =  getDuelingState().getBoard().getOpponentField().allCardSpots();
+			aiMagicField = true;
 		}
 		if(spotList == null) {return;}
 		//loop through that spot list and find out which spot you are hovering over and set the display card to whatever card you find
