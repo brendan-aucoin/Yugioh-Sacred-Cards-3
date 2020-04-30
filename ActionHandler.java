@@ -16,7 +16,7 @@ public class ActionHandler {
 	}
 	/*will put all the action objects in the map*/
 	private void init() {
-		actions.put(ActionList.PLAY_CARD_FROM_HAND,new PlayCardAction());
+		actions.put(ActionList.PLAY_CARD_FROM_HAND,new PlayCardFromHandAction());
 		actions.put(ActionList.DEFEND,new DefendAction());
 		actions.put(ActionList.TRIBUTE, new TributeAction());
 		actions.put(ActionList.ACTIVATE_MONSTER_EFFECT, new MonsterEffectAction());
@@ -24,6 +24,9 @@ public class ActionHandler {
 		actions.put(ActionList.END_TURN, new EndTurnAction());
 		actions.put(ActionList.REMOVE_CARD, new RemoveCardAction());
 		actions.put(ActionList.START_TURN,new StartTurnAction());
+		actions.put(ActionList.ATTACK,new AttackAction());
+		actions.put(ActionList.SUMMON_CARD, new SummonCardAction());
+		actions.put(ActionList.ACTIVATE_TRAP,new TrapAction());
 	}
 	/*returns an action based on the action list enum you pass in*/
 	public Action getAction(ActionList action) {

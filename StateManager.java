@@ -5,17 +5,40 @@
  * */
 package states;
 
+import java.util.HashMap;
+
+import game.Game;
+
 public class StateManager {
 	private State state;
-	public StateManager() {
+	private Game game;
+	private HashMap<StateList,State> allStates;
+	public StateManager(Game game) {
+		this.game = game;
 		state = null;
+		allStates = new HashMap<StateList,State>();
+		fillStates();
+	}
+	private void fillStates() {
+		allStates.put(StateList.MAIN_MENU,new MainMenuState(game));
+		allStates.put(StateList.DUELING,new DuelingState(game));
+		allStates.put(StateList.ATTACKING,new AttackingState(game));
+	}
+	
+	public void setState(StateList state) {
+		this.state = allStates.get(state);
 	}
 	
 	public void setState(State state) {
 		this.state = state;
 	}
+	public State getState(StateList state) {
+		return allStates.get(state);
+	}
 	
 	public State getState() {
 		return state;
 	}
+	
+	
 }

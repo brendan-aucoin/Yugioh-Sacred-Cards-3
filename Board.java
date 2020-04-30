@@ -10,6 +10,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
@@ -42,6 +43,10 @@ public abstract class Board {
 	private Rectangle playerEndTurnBounds,opponentEndTurnBounds;//the two buttons.
 	private AffineTransform tx;
 	private AffineTransformOp op;
+	private Color draggingSpotColour;
+	private Color fourCornerHoverColour;
+	public static int SPOT_WIDTH = Display.SCREEN_SIZE.width/9;
+	public static int SPOT_HEIGHT = Display.SCREEN_SIZE.height/5;
 	public Board(Game game,BoardType type) {
 		this.game = game;
 		this.type = type;
@@ -67,7 +72,8 @@ public abstract class Board {
 		));
 		affinetransform = new AffineTransform();   
 		frc = new FontRenderContext(affinetransform,true,true);
-		
+		draggingSpotColour = Color.WHITE;
+		fourCornerHoverColour = Color.BLUE;
 		createAllSpots();
 	}
 	
@@ -76,7 +82,11 @@ public abstract class Board {
 		spot.setCard(null);
 		spot.setOpen(true);
 	}
-	
+	/*clears both players fields*/
+	public void clear() {
+		playerField.clear();
+		opponentField.clear();
+	}
 	/*creates all the bounds for all the spots on the fields*/
 	protected void createAllSpots() {
 		//monster spots for player
@@ -119,7 +129,7 @@ public abstract class Board {
 	}
 	
 	
-	
+	/*renders all the player cards in their magic and monster spots*/
 	public void renderPlayersCards(Graphics2D g) {
 		//the player field for monsters
 		renderMonstersOnBoard(g,getPlayerField().getMonsterSpots(),false);
@@ -132,13 +142,14 @@ public abstract class Board {
 	public void renderAiCards(Graphics2D g) {
 		//the opponent field for monsters
 		renderMonstersOnBoard(g,getOpponentField().getMonsterSpots(),true);
-			
+		
 		//the opponent field for magic
 		renderCardsInSpot(g,getOpponentField().getMagicSpots(),false);
 				
 		//the opponent field for hand
-		renderCardsInSpot(g, opponent.getHand().getSpots(),true);//you dont want to see the opponents cards
+		renderCardsInSpot(g, opponent.getHand().getSpots(),false);//you dont want to see the opponents cards
 	}
+	
 	/*render all cards in a list of spots*/
 	private void renderCardsInSpot(Graphics2D g,List<Spot> list,boolean showCardImage) {
 		for(int i =0; i < list.size();i++) {
@@ -156,27 +167,11 @@ public abstract class Board {
 	
 	/*renders the card in defense mode*/
 	private void renderDefenseMonsterOnBoard(Graphics2D g,Spot spot,Monster monster,boolean aiCard) {
-		// The required drawing location
-		int drawLocationX = spot.getBounds().x;
-		int drawLocationY = spot.getBounds().y - spot.getBounds().height/6;
-
-		// Rotation information
-		double rotationRequired = Math.toRadians (90);
-		double locationX = spot.getBounds().getWidth()/1.5;
-		double locationY = spot.getBounds().getHeight();
-		tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
-		op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-
-		// Drawing the rotated image at the required drawing locations
-		BufferedImage renderImage = null;
-		if(aiCard) {
-			renderImage = spot.getCard().isRevealed() ? spot.getCard().getImage() : Texture.backOfCardImage;
-		}
-		else {
-			renderImage = spot.getCard().getImage();
-		}
-		g.drawImage(op.filter(renderImage,null), drawLocationX, drawLocationY, spot.getBounds().width,spot.getBounds().height, null);
+		BufferedImage renderImage = aiCard ? (spot.getCard().isRevealed() ? spot.getCard().getDefenseImage() : Texture.backOfCardImageRotated90) : spot.getCard().getDefenseImage();
+		g.drawImage(renderImage, spot.getBounds().x,spot.getBounds().y + renderImage.getHeight()/4,null);
 	}
+	
+	
 	/*render all the monsters on the board and makes sure its in defense and draws the proper image*/
 	private void renderMonstersOnBoard(Graphics2D g,List<Spot>spots,boolean aiField) {
 		for(int i =0; i < spots.size();i++) {
@@ -187,20 +182,16 @@ public abstract class Board {
 					renderDefenseMonsterOnBoard(g,spot,monster,aiField);
 				}
 				else {
-					if(spot.getCard().isRevealed()) {
-						if(aiField) {
-							double rotationRequired = Math.toRadians (-180);
-							double locationX = spot.getBounds().getWidth()/1.707;
-							double locationY = spot.getBounds().getHeight()/1.21;
-							tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
-							op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-							g.drawImage(op.filter(spot.getCard().getImage(),null), spot.getBounds().x, spot.getBounds().y, spot.getBounds().width,spot.getBounds().height, null);
+					if(aiField) {
+						if(spot.getCard().isRevealed()) {
+							g.drawImage(spot.getCard().getUpsideDownImage(), spot.getBounds().x, spot.getBounds().y, spot.getBounds().width,spot.getBounds().height, null);
 						}
 						else {
-							spot.render(g);//only put this if you dont want to have the opponents cards facing you
+							g.drawImage(Texture.backOfCardImage,spot.getBounds().x,spot.getBounds().y,spot.getBounds().width,spot.getBounds().height,null);
 						}
-						
-						
+					}
+					else {
+						spot.render(g);
 					}
 				}
 			}
@@ -305,4 +296,11 @@ public abstract class Board {
 	public void setAffinetransform(AffineTransform affinetransform) {this.affinetransform = affinetransform;}
 	public FontRenderContext getFrc() {return frc;}
 	public void setFrc(FontRenderContext frc) {this.frc = frc;}
+	public Color getDraggingSpotColour() {return draggingSpotColour;}
+	public void setDraggingSpotColour(Color draggingSpotColour) {this.draggingSpotColour = draggingSpotColour;}
+	public Color getFourCornerHoverColour() {return fourCornerHoverColour;}
+	public void setFourCornerHoverColour(Color fourCornerHoverColour) {this.fourCornerHoverColour = fourCornerHoverColour;}
+	
+	
+	
 }

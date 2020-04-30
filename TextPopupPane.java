@@ -13,6 +13,7 @@ import java.awt.Rectangle;
 
 import game.Game;
 import gui.Display;
+import player.Ai;
 import states.DuelingState;
 
 public class TextPopupPane extends EffectPane{
@@ -21,9 +22,11 @@ public class TextPopupPane extends EffectPane{
 	private String text;
 	private float textAlpha,boxAlpha;
 	private int time;
-	public TextPopupPane(DuelingState duelingState,Game game) {
+	private Ai ai;
+	public TextPopupPane(DuelingState duelingState,Game game,Ai ai) {
 		super(game,new Rectangle(
 		0, Display.SCREEN_SIZE.height/2,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height/2 + Display.SCREEN_SIZE.height/5),duelingState);
+		this.ai = ai;
 		init();
 	}
 	/*sets the default values*/
@@ -46,11 +49,11 @@ public class TextPopupPane extends EffectPane{
 			if(ticks >= time) {
 				setStart(false);
 				getDuelingState().setCanScroll(true);
+				if(ai != null) {
+					ai.signalTextPopupPane();
+				}
 			}
 		}
-		/*else {
-			getDuelingState().setCanScroll(true);
-		}*/
 	}
 	public void startNew(String text,int time) {
 		reset();
@@ -58,6 +61,7 @@ public class TextPopupPane extends EffectPane{
 		setTime(time);
 		setStart(true);
 	}
+	
 	/*reset everything back to the defaults*/
 	public void reset() {
 		ticks= 0;

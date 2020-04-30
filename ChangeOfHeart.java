@@ -6,30 +6,33 @@
 package cards;
 
 import java.io.FileNotFoundException;
+import java.util.Random;
 
+import boards.Board;
 import dueling.Field;
 import player.Duelist;
-import types.CardType;
 
-public class ChangeOfHeart extends MagicCard{
+public class ChangeOfHeart extends SpellCard{
 	public ChangeOfHeart() throws FileNotFoundException {
-		super(CardList.CHANGE_OF_HEART.ordinal(),CardType.SPELL);
+		super(CardList.CHANGE_OF_HEART.ordinal());
 		setMaxFrequency(1);//you can only have 1 change of heart in your deck.
 	}
 
 	@Override
-	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
+		System.out.println("Chagne of heart");
 	}
 
 	
 	/*this will eventually read from a file.*/
 	@Override
 	public String effectText() {
-		return "Take Opponents monster";
+		//return "Take Opponents monster";
+		return (new Random().nextInt(100000) + "");
 	}
 
 	public boolean playCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		return opponentField.getMonsterCards().size() >= 1;
+		//return opponentField.getMonsterCards().size() >= 1;
+		return true;
 	}
 }

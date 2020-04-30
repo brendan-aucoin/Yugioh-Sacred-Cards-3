@@ -12,11 +12,10 @@ import dueling.Field;
 import player.Duelist;
 import types.CardType;
 
-public abstract class MagicCard extends Card implements CardEffect{
+public abstract class MagicCard extends Card{
 	public static final int TEXT_POPUP_TIME = 95;
 	public MagicCard(int cardId,CardType type) throws FileNotFoundException {
 		super(cardId,type);
-		setRevealed(false);
 	}
 	
 	public MagicCard(MagicCard c){

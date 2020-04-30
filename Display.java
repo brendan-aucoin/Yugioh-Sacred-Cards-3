@@ -9,6 +9,7 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 
 import javax.swing.ImageIcon;
@@ -20,6 +21,8 @@ public class Display {
 	private JFrame frame;
 	public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 	//public static final Dimension SCREEN_SIZE = new Dimension(750,600);
+	
+	public static final Rectangle FULL_SCREEN = new Rectangle(0,0,SCREEN_SIZE.width,SCREEN_SIZE.height);
 	private Canvas canvas;
 	public Display() {
 		frame = new JFrame(Game.TITLE);//if i change the title of the game i dont wanna find the string in this class its easier to find in game
@@ -29,7 +32,7 @@ public class Display {
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(new FlowLayout());
-		Image icon = new ImageIcon(this.getClass().getResource(Game.DUELING_IMAGES + "seal of orichalcos.png")).getImage();
+		Image icon = new ImageIcon(Game.RES_PATH + "dueling_images/" + "seal of orichalcos.png").getImage();
 		frame.setIconImage(icon);
 		
 		canvas = new Canvas();

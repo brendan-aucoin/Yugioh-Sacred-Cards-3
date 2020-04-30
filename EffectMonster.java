@@ -10,6 +10,8 @@ import java.io.FileNotFoundException;
 
 import attributes.Attribute;
 import card_effects.CardEffect;
+import dueling.Field;
+import player.Duelist;
 
 public abstract class EffectMonster extends Monster implements CardEffect{//extends the monster class and implements the CardEffect interface
 	private boolean usedEffect;
@@ -29,6 +31,8 @@ public abstract class EffectMonster extends Monster implements CardEffect{//exte
     { 
         return (EffectMonster) super.clone(); 
     } 
+	
+	public abstract boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField);
 	
 	public boolean hasUsedEffect() {return usedEffect;}
 	public void setUsedEffect(boolean usedEffect) {this.usedEffect = usedEffect;}

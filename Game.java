@@ -10,27 +10,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import boards.RegularBoard;
 import cards.Card;
 import cards.CardHandler;
-import cards.CardList;
-import cards.ChangeOfHeart;
-import cards.Doron;
-import cards.FlameViper;
-import cards.GaiaTheFierceKnight;
-import cards.HarpiesPetBabyDragon;
-import cards.MysticalSpaceTyphoon;
-import cards.ObeliskTheTormentor;
-import cards.RightLegOfTheForbiddenOne;
-import cards.SwordsmanOfLandstar;
-import cards.TheLegendaryFisherman;
-import cards.TrapHole;
-import cards.WaterOmotics;
 import dueling.Deck;
 import gui.Display;
 import images.BufferedImageLoader;
@@ -39,7 +24,8 @@ import input.MouseManager;
 import player.Ai;
 import player.Player;
 import states.DuelingState;
-import states.MainMenuState;
+import states.State;
+import states.StateList;
 import states.StateManager;
 
 public class Game  implements Runnable{
@@ -48,6 +34,7 @@ public class Game  implements Runnable{
 	public static final String TITLE = "Sacred Cards 3";
 	public static final String CARD_STATS = "cardStats.txt";
 	public static final String TEXTS_PATH = System.getProperty("user.dir")+ System.getProperty("file.separator")+"texts"+System.getProperty("file.separator");// + "decks" +System.getProperty("file.separator");
+	public static final String RES_PATH = System.getProperty("user.dir") + System.getProperty("file.separator") + "resources"+System.getProperty("file.separator");
 	//runner variables
 	private boolean running;
 	private Thread thread;
@@ -60,8 +47,9 @@ public class Game  implements Runnable{
 	private MouseManager mouseManager;
 	//state
 	private StateManager stateManager;
-	private MainMenuState mainMenu;
-	private DuelingState duelingState;
+//	private MainMenuState mainMenu;
+	//private DuelingState duelingState;
+	//private AttackingState attackingState;
 	
 	//cards
 	private CardHandler cardHandler;
@@ -78,27 +66,35 @@ public class Game  implements Runnable{
 		//initialize all the objects for states and managers
 		display = new Display();
 		
-		stateManager = new StateManager();
 		imageLoader = new BufferedImageLoader();
-		mouseManager = new MouseManager(stateManager);
+		
 		texture = new Texture();
 		cardHandler = new CardHandler();
-		mainMenu = new MainMenuState(this);
-		
+		/*mainMenu = new MainMenuState(this);
+		duelingState = new DuelingState(this);
+		attackingState = new AttackingState(this);*/
+	}
+	
+	/*add all the input listeners and sets starting state of the game*/
+	private void init() {
 		//get rid of
 		board = new RegularBoard(this);
-		duelingState = new DuelingState(this);
 		
-		player = new Player("Brendan");
-		opponent = new Ai(duelingState,"Opponent");
+		stateManager = new StateManager(this);
+		mouseManager = new MouseManager(stateManager);
 		
 		//get rid of
+		player = new Player("Brendan");
+		opponent = new Ai((DuelingState)stateManager.getState(StateList.DUELING),"Opponent");
+		
+		//get rid of
+		DuelingState duelingState = (DuelingState)(stateManager.getState(StateList.DUELING));
 		duelingState.setPlayer(player);
 		duelingState.setBoard(board);
 		duelingState.setHandBounds();
 		duelingState.setOpponent(opponent);
 		
-		
+		//get rid of
 		Deck tempDeck = new Deck("Temp deck");
 		try {
 			tempDeck.createDeck(TEXTS_PATH + "temp base deck.txt");
@@ -106,23 +102,17 @@ public class Game  implements Runnable{
 			System.err.println("COULD NOT LOAD FILE");
 			System.exit(0);
 		}
-		player.setDeck(tempDeck);
-		opponent.setDeck(tempDeck);
+		player.setDeck(new Deck(tempDeck,"Player deck"));
+		opponent.setDeck(new Deck(tempDeck,"AI deck"));
 		player.shuffle();
 		opponent.shuffle();
-	}
-	
-	/*add all the input listeners and sets starting state of the game*/
-	private void init() {
+		
 		/*set up all the mouse stuff and keyboard stuff*/
 		display.getCanvas().addMouseListener(mouseManager);
 		display.getCanvas().addMouseMotionListener(mouseManager);
 		display.getCanvas().addMouseWheelListener(mouseManager);
 		/*set up all managers like state manager*/
-		stateManager.setState(duelingState);
-		
-		//get rid of 
-		//duelingState.setBoard(board);
+		stateManager.setState(StateList.DUELING);
 		
 		duelingState.startDuel();
 		/*end of method*/
@@ -203,8 +193,28 @@ public class Game  implements Runnable{
 		}
 	}
 	
-	/*some other classes need access to the image loader which the game has. instead of creating a new image loader*/
-	public BufferedImageLoader getImageLoader() {
-		return imageLoader;
+	public void setState(StateList state) {
+		stateManager.setState(state);
 	}
+	public void setState(State state) {
+		stateManager.setState(state);
+	}
+	public State getState(StateList state) {
+		return stateManager.getState(state);
+	}
+	public State getCurrentState() {
+		return stateManager.getState();
+	}
+	/*some other classes need access to the image loader which the game has. instead of creating a new image loader*/
+	public BufferedImageLoader getImageLoader() {return imageLoader;}
+	//public void setStateManager(StateManager stateManager) {this.stateManager = stateManager;}
+	//public StateManager getStateManager() {return stateManager;}
+	
+	/*public MainMenuState getMainMenu() {return mainMenu;}
+	public void setMainMenu(MainMenuState mainMenu) {this.mainMenu = mainMenu;}
+	public DuelingState getDuelingState() {return duelingState;}
+	public void setDuelingState(DuelingState duelingState) {this.duelingState = duelingState;}
+	public AttackingState getAttackingState() {return attackingState;}
+	public void setAttackingState(AttackingState attackingState) {this.attackingState = attackingState;}*/
+	
 }

@@ -7,8 +7,8 @@ package actions;
 
 public enum ActionList {
 	PLAY_CARD_FROM_HAND,
-	ATTACK_CARD,
-	ATTACK_DUELIST,
+	SUMMON_CARD,//this is for effects that summon cards
+	ATTACK,
 	DEFEND,
 	TRIBUTE,
 	ACTIVATE_MONSTER_EFFECT,

@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import cards.Card;
 import cards.CompareByAttack;
+import cards.CompareByCurrentStat;
 import cards.CompareByDefense;
 import cards.MagicCard;
 import cards.Monster;
@@ -49,6 +50,20 @@ public class Field {
 		}
 		else if(c instanceof MagicCard) {
 			magicCards.remove(c);
+		}
+	}
+	
+	public void clear() {
+		field.clear();
+		monsterCards.clear();
+		magicCards.clear();
+		for(int i =0; i < monsterSpots.size();i++) {
+			monsterSpots.get(i).setCard(null);
+			monsterSpots.get(i).setOpen(true);
+		}
+		for(int i =0; i < magicSpots.size();i++) {
+			magicSpots.get(i).setCard(null);
+			magicSpots.get(i).setOpen(true);
 		}
 	}
 	
@@ -91,6 +106,8 @@ public class Field {
 		return tempCards;
 	}
 	
+	
+	
 	public ArrayList<Monster> getRevealedSortedMonstersByAttack(){
 		ArrayList<Monster> tempCards = new ArrayList<Monster>();
 		ArrayList<Monster> sortedMonsters = getSortedMonstersByAttack();
@@ -100,6 +117,72 @@ public class Field {
 			}
 		}
 		return tempCards;		
+	}
+	
+	public ArrayList<Monster> getSortedMonstersByCurrentStat(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>(monsterCards);
+		Collections.sort(tempCards,new CompareByCurrentStat());
+		return tempCards;
+	}
+	public ArrayList<Monster> getRevealedSortedMonstersByCurrentStat(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>();
+		ArrayList<Monster> sortedMonsters = getSortedMonstersByCurrentStat();
+		for(int i =0; i < sortedMonsters.size();i++) {
+			if(sortedMonsters.get(i).isRevealed()) {
+				tempCards.add(sortedMonsters.get(i));
+			}
+		}
+		
+		return tempCards;		
+	}
+	
+	public ArrayList<Monster> getNonRevealedMonsters(){
+		ArrayList<Monster> tempCards = new ArrayList<Monster>();
+		for(int i =0; i < monsterSpots.size();i++) {
+			if(monsterSpots.get(i).getCard() instanceof Monster) {
+				Monster m = (Monster)monsterSpots.get(i).getCard();
+				if(!m.isRevealed()) {
+					tempCards.add(m);
+				}
+			}
+		}
+		return tempCards;
+	}
+	
+	public ArrayList<Spot> getNonRevealedMonstersSpots(){
+		ArrayList<Spot> tempCards = new ArrayList<Spot>();
+		for(int i =0; i < monsterSpots.size();i++) {
+			if(monsterSpots.get(i).getCard() instanceof Monster) {
+				Monster m = (Monster)monsterSpots.get(i).getCard();
+				if(!m.isRevealed()) {
+					tempCards.add(monsterSpots.get(i));
+				}
+			}
+		}
+		return tempCards;
+	}
+	
+	
+	
+	public ArrayList<Spot> getRevealedMonsterSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>();
+		for(int i =0; i < monsterSpots.size();i++) {
+			if(!monsterSpots.get(i).isOpen() && monsterSpots.get(i).getCard().isRevealed()) {
+				tempSpots.add(monsterSpots.get(i));
+			}
+		}
+		return tempSpots;
+	}
+	
+	public ArrayList<Spot> getSortedRevealedMonsterSpots(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getRevealedMonsterSpots());
+		Collections.sort(tempSpots,new CompareSpotByCardAttack());
+		return tempSpots;
+	}
+	public ArrayList<Spot> getSortedRevealedMonsterSpotsByCurrentStat(){
+		ArrayList<Spot> tempSpots = new ArrayList<Spot>(getRevealedMonsterSpots());
+		Collections.sort(tempSpots,new CompareSpotByCardsCurrentStat());
+		return tempSpots;
 	}
 	/*a sorted version of the monsters array based on defense*/
 	public ArrayList<Monster> getSortedMonstersByDefense(){
@@ -123,6 +206,7 @@ public class Field {
 		Collections.sort(tempSpots,new CompareSpotByCardAttack());
 		return tempSpots;
 	}
+	
 	/*add a spot to the monster spots*/
 	public void addSpotToMonsters(Spot sp) {
 		monsterSpots.add(sp);

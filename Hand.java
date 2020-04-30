@@ -36,9 +36,9 @@ public class Hand {
 	 * drew from the deck into your hand and set the spots card to whatever you drew and the availability to false*/
 	public void draw(Deck deck) {
 		if(hand.size() < MAX_CARDS) {
-			Card c = deck.draw();
 			for(int i=0;i < spots.size();i++) {
 				if(spots.get(i).isOpen()) {
+					Card c = deck.draw();
 					spots.get(i).setCard(c);
 					spots.get(i).setOpen(false);
 					hand.add(c);
@@ -56,6 +56,13 @@ public class Hand {
 		hand.remove(c);
 	}
 	
+	public void clear() {
+		hand.clear();
+		for(int i =0; i < spots.size();i++) {
+			spots.get(i).setCard(null);
+			spots.get(i).setOpen(true);
+		}
+	}
 	/*render all the spots and all the cards in those spots*/
 	public void render(Graphics2D g) {
 		g.setColor(new Color(178,34,34));

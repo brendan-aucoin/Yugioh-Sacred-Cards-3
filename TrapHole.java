@@ -7,17 +7,30 @@ package cards;
 
 import java.io.FileNotFoundException;
 
+import boards.Board;
 import dueling.Field;
+import dueling.Spot;
 import player.Duelist;
-import types.CardType;
 
-public class TrapHole extends MagicCard{
+public class TrapHole extends TrapCard{
 	public TrapHole() throws FileNotFoundException {
-		super(CardList.TRAP_HOLE.ordinal(),CardType.TRAP);
+		super(CardList.TRAP_HOLE.ordinal());
+		setMaxFrequency(100);
 	}
 	
-	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		
+	public boolean effect(Spot attackingSpot,Spot receivingSpot,Duelist attacker,Duelist receiver,Field attackersField,Field receiversField,Board board) {
+		System.out.println("TRAP HOLE");
+		Card c = attackingSpot.getCard();
+		if(c==null) {return false;}
+		if(c instanceof Monster) {
+			Monster monster = (Monster)c;
+			if(monster.getAttack() >= 1000) {
+				monster.setUsedAction(true);
+				monster.setRevealed(true);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@Override
@@ -26,6 +39,6 @@ public class TrapHole extends MagicCard{
 	}
 	@Override
 	public String effectText() {
-		return "";
+		return "TRAP HOLE";
 	}
 }

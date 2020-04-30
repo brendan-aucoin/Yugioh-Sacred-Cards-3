@@ -16,7 +16,7 @@ import states.DuelingState;
 public class StartTurnPhase extends TextPopupPane{
 	private Duelist nextPlayer;
 	public StartTurnPhase(DuelingState duelingState,Game game) {
-		super(duelingState,game);
+		super(duelingState,game,null);
 		init();
 	}
 	/*sets the default time and text*/

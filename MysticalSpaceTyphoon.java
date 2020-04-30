@@ -7,19 +7,21 @@ package cards;
 
 import java.io.FileNotFoundException;
 
+import boards.Board;
 import dueling.Field;
+import dueling.Spot;
 import player.Duelist;
-import types.CardType;
 
-public class MysticalSpaceTyphoon extends MagicCard{
+public class MysticalSpaceTyphoon extends TrapCard{
 	public MysticalSpaceTyphoon() throws FileNotFoundException {
-		super(CardList.MYSTICAL_SPACE_TYPHOON.ordinal(),CardType.TRAP);
+		super(CardList.MYSTICAL_SPACE_TYPHOON.ordinal());
 	}
 
 	@Override
 	/*loops through the opponents magic spots and gets rid of all cards*/
-	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		
+	public boolean effect(Spot attackingSpot,Spot receivingSpot,Duelist attacker,Duelist receiver,Field attackersField,Field receiversField,Board board) {
+		System.out.println("SPACE TYPHOON");
+		return false;
 	}
 	@Override
 	public String effectText() {

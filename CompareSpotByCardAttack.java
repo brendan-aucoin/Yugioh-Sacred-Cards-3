@@ -1,3 +1,8 @@
+/*
+ *Brendan Aucoin
+ *03/30/2020
+ *compares two spots by the cards attack
+ * */
 package dueling;
 
 import java.util.Comparator;

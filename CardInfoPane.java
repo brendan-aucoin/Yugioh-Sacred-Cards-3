@@ -1,5 +1,5 @@
 /*
- *Brendan Acoin
+ *Brendan Aucoin
  *07/06/2019
  *the box at the bottom displaying the info of the card, the name, the stats, and the type, etc
  * */
@@ -68,13 +68,11 @@ public class CardInfoPane extends EffectPane{
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,backgroundAlpha));
 		g.fill(getBounds());
 		
-		if(displayCard != null) {
-			renderName(g);
-			
+		if(displayCard != null && displayCard.isRevealed()) {
+			renderName(g);		
 			renderIcons(g);
 			renderStats(g);
 			renderAttribute(g);
-			
 		}
 	}
 	
@@ -85,6 +83,7 @@ public class CardInfoPane extends EffectPane{
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("ariel",Font.PLAIN,25));
 		//drawing the name
+		if(aiMagicField && displayCard instanceof MagicCard ) {return;}
 		g.drawString(displayName, getBounds().x + getBounds().width/60
 		, getBounds().y + (int)(g.getFont().getStringBounds(displayName, frc).getHeight()));
 	}

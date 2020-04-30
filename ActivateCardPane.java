@@ -18,15 +18,16 @@ import cards.Card;
 import cards.EffectMonster;
 import cards.MagicCard;
 import cards.Monster;
+import cards.SpellCard;
 import game.Game;
 import states.DuelingState;
 import types.CardType;
 
 public class ActivateCardPane extends EffectPane{
-	private boolean displaying;
-	private Monster card;
-	private Spot spot;
-	private Rectangle attackBounds,defenseBounds,tributeBounds,effectBounds;
+	private boolean displaying;//wether or not the box is showing 
+	private Monster card;//the current card you clicked on
+	private Spot spot;//the current spot you clicked on
+	private Rectangle attackBounds,defenseBounds,tributeBounds,effectBounds;//the four buttons that you can press
 	private Font textFont;
 	private BufferedImage milleniumEyeImage;
 	private TextPopupPane textPopupPane;
@@ -42,7 +43,7 @@ public class ActivateCardPane extends EffectPane{
 		spot = null;
 		textFont = new Font("ariel",Font.PLAIN,55);
 		milleniumEyeImage = getGame().getImageLoader().loadImage("dueling_images","milleniumEye.png");
-		textPopupPane = new TextPopupPane(getDuelingState(),getGame());
+		textPopupPane = new TextPopupPane(getDuelingState(),getGame(),null);
 	}
 	/*you cannot scroll if the pop up is displaying*/
 	public void update() {
@@ -144,8 +145,8 @@ public class ActivateCardPane extends EffectPane{
 		for(int i =0; i < getDuelingState().getBoard().getPlayerField().getMagicSpots().size();i++) {
 			Spot spot = getDuelingState().getBoard().getPlayerField().getMagicSpots().get(i);
 			if(mouseOver(spot.getBounds())) {
-				if(spot.getCard() instanceof MagicCard && spot.getCard().getType() == CardType.SPELL) {
-					MagicCard spell = (MagicCard)spot.getCard();
+				if(spot.getCard() instanceof SpellCard && spot.getCard().getType() == CardType.SPELL) {
+					SpellCard spell = (SpellCard)spot.getCard();
 					DuelingState.actionHandler.getAction(ActionList.ACTIVATE_SPELL).performAction(spell, getDuelingState().getPlayer(), getDuelingState().getOpponent(), getDuelingState().getBoard()
 						,getDuelingState().getPlayerField(),getDuelingState().getOpponentField(),spot,textPopupPane);
 				}
@@ -153,21 +154,47 @@ public class ActivateCardPane extends EffectPane{
 		}
 	}
 	
+	
+	/*calls the action for attacking and passing in null as the opponents monster*/
+	private void attackOpponentDirectly() {
+		DuelingState.actionHandler.getAction(ActionList.ATTACK).performAction(
+		getDuelingState().getPlayer(),getDuelingState().getOpponent(),spot,null,getDuelingState().getGame(),getDuelingState().getBoard(),
+		getDuelingState().getPlayerField(),getDuelingState().getOpponentField()
+		
+		);
+	}
+	/*calls the pick card pane and starts displaying it */
+	private void attackOpponentMonster() {
+		getDuelingState().getPickCardPane().start(
+				getDuelingState().getOpponentField().getMonsterSpots(),
+				e -> performAttackCardAction(e), e ->  {}, spot);
+	}
+	/*calls the action for attacking and passing in the enemy card*/
+	private void performAttackCardAction(Spot aiSpot) {
+			DuelingState.actionHandler.getAction(ActionList.ATTACK).performAction(
+					getDuelingState().getPlayer(),getDuelingState().getOpponent(),this.spot,aiSpot,getDuelingState().getGame(),
+					getDuelingState().getBoard(),getDuelingState().getPlayerField(),getDuelingState().getOpponentField()
+			);
+	}
+	/*it will attack directly if the opponent has no monsters or it will attack another monster*/
+	private void attack() {
+		if(getDuelingState().getBoard().getOpponentField().getMonsterCards().size() == 0) {
+			attackOpponentDirectly();
+		}
+		else {
+			attackOpponentMonster();
+		}
+	}
 	/*
 	 * performs the appropriate action for which button you click on
 	 * */
 	private void clickOnButtons() {
 		if(mouseOver(attackBounds)) {
-			
-			card.setInDefense(false);
-			
-			card.setUsedAction(true);
-			
-			card.setRevealed(true);
+			attack();
 		}
 		
 		else if(mouseOver(defenseBounds)) {
-			DuelingState.actionHandler.getAction(ActionList.DEFEND).performAction(card);
+			DuelingState.actionHandler.getAction(ActionList.DEFEND).performAction(card,getDuelingState().getPlayer());
 		}
 		
 		else if(mouseOver(tributeBounds)) {
@@ -175,7 +202,7 @@ public class ActivateCardPane extends EffectPane{
 		}
 		
 		else if(mouseOver(effectBounds)) {
-			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(card,getDuelingState().getPlayer(),getDuelingState().getOpponent(),getDuelingState().getPlayerField(),getDuelingState().getOpponentField());
+			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(card,getDuelingState().getPlayer(),getDuelingState().getOpponent(),getDuelingState().getPlayerField(),getDuelingState().getOpponentField(),getDuelingState().getBoard());
 		}
 		
 		displaying = false;

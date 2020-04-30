@@ -20,8 +20,12 @@ public class CardHolder {
 		cardFrequency = new HashMap<String,Integer>();
 	}
 	public CardHolder(CardHolder ch) {
-		this.list = ch.getList();
-		this.cardFrequency = ch.getCardFrequency();
+		this.list = new LinkedList<Card>();
+		//you must add the clone of the card
+		for(int i =0; i < ch.list.size();i++) {
+			try {this.list.add(ch.list.get(i).clone());} catch (CloneNotSupportedException e) {e.printStackTrace();}
+		}
+		this.cardFrequency = new HashMap<String,Integer>(ch.getCardFrequency());
 	}
 	
 	/*goes through every card in the list and adds it to the map*/

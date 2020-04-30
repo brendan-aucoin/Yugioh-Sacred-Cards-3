@@ -8,6 +8,7 @@ package actions;
 
 import boards.Board;
 import cards.MagicCard;
+import cards.SpellCard;
 import dueling.Field;
 import dueling.Spot;
 import dueling.TextPopupPane;
@@ -20,10 +21,10 @@ public class ActivateSpellAction extends Action{
 	 * and then activates the spells effect and removes it from the board
 	 * */
 	@Override
-	public void performAction(MagicCard magicCard,Duelist player,Duelist opponent,Board board,Field playerField,Field opponentField,Spot spellSpot,TextPopupPane textPopupPane) {	
+	public void performAction(SpellCard magicCard,Duelist player,Duelist opponent,Board board,Field playerField,Field opponentField,Spot spellSpot,TextPopupPane textPopupPane) {		
 				textPopupPane.startNew(magicCard.effectText(),MagicCard.TEXT_POPUP_TIME);
 				DuelingState.actionHandler.getAction(ActionList.REMOVE_CARD).performAction(spellSpot,board,playerField);
-				magicCard.effect(player,opponent,playerField,opponentField);
+				magicCard.effect(player,opponent,playerField,opponentField,board);
 		
 	}
 }

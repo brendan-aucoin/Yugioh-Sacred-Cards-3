@@ -13,9 +13,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
@@ -30,6 +27,7 @@ import dueling.CardInfoPane;
 import dueling.Deck;
 import dueling.Field;
 import dueling.Phase;
+import dueling.PickCardPane;
 import dueling.Spot;
 import dueling.StartTurnPhase;
 import game.Game;
@@ -47,6 +45,7 @@ public class DuelingState extends InteractionPane implements State{
 	private Rectangle playerHandBounds,opponentHandBounds;
 	private StartTurnPhase startTurnPhase;
 	private ActivateCardPane activateCardPane;
+	private PickCardPane pickCardPane;
 	private CardInfoPane cardInfoPane;
 	private Deck originalPlayerDeck,originalOpponentDeck;
 	private boolean canScroll;
@@ -60,8 +59,9 @@ public class DuelingState extends InteractionPane implements State{
 	public static int turnCount = 0;
 	public static Phase phase;
 	public static ActionHandler actionHandler;
+	public static boolean firstTurn;
 	public DuelingState(Game game) {
-		super(game,new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height));
+		super(game,Display.FULL_SCREEN);
 		cam = new Camera(0,0);
 		init();
 	}
@@ -73,6 +73,8 @@ public class DuelingState extends InteractionPane implements State{
 		startTurnPhase = new StartTurnPhase(this,getGame());
 		cardInfoPane = new CardInfoPane(this,getGame());
 		activateCardPane = new ActivateCardPane(this,getGame());
+		pickCardPane = new PickCardPane(this,getGame());
+		//attackingState = new AttackingState(getGame());
 		canScroll = false;
 		playerGoesFirst = true;
 		canDrag = false;
@@ -81,6 +83,7 @@ public class DuelingState extends InteractionPane implements State{
 		draggedPoint = new Point();
 		draggingBounds = new Rectangle();
 		actionHandler = new ActionHandler();
+		firstTurn = true;
 	}
 	
 	/*needs to do this first after you set the board*/
@@ -96,6 +99,7 @@ public class DuelingState extends InteractionPane implements State{
 	}
 	/*this is called every time you talk to an enemy */
 	public void startDuel() {
+		firstTurn = true;
 		//sets the boards players
 		board.setPlayer(player);
 		board.setOpponent(opponent);
@@ -103,16 +107,22 @@ public class DuelingState extends InteractionPane implements State{
 		originalPlayerDeck = new Deck(player.getDeck(),"Original Player Deck");
 		originalOpponentDeck = new Deck(opponent.getDeck(),"Original Opponent Deck");
 		activateCardPane.setButtonBounds();//the panel for activating cards needs to have the proper button boundaries
+		
 		//create the hand bounds of both players
 		player.createHandBounds(playerHandBounds);
 		opponent.createHandBounds(opponentHandBounds);
+		
 		//initialize both players hands which will create the spots
 		player.getHand().init();
 		opponent.getHand().init();
 		
+		//shuffle the decks
+		player.getDeck().shuffle();
+		opponent.getDeck().shuffle();
 		//always start by drawing 5 cards
 		player.draw(5);
 		opponent.draw(5);
+		
 		//decide which player goes first 
 		decideOrder();
 		phase = Phase.START_TURN;
@@ -123,9 +133,12 @@ public class DuelingState extends InteractionPane implements State{
 		
 		player.setDeck(originalPlayerDeck);
 		player.setHealth(Player.STARTING_HEALTH);
+		player.getHand().clear();
 		opponent.setDeck(originalOpponentDeck);
 		opponent.setHealth(Player.STARTING_HEALTH);
+		opponent.getHand().clear();
 		
+		board.clear();
 		player.createHandBounds(null);
 		opponent.createHandBounds(null);
 		phase = null;
@@ -159,6 +172,8 @@ public class DuelingState extends InteractionPane implements State{
 		}
 		board.update();
 		activateCardPane.update();
+		opponent.updateTextPopupPane();
+		pickCardPane.update();
 		if(phase == Phase.START_TURN) {
 			startTurnPhase.update();
 		}
@@ -168,6 +183,10 @@ public class DuelingState extends InteractionPane implements State{
 			canScroll = false;
 		}
 		if(!canDrag) {draggedPoint = new Point();}//reset the point
+		
+		if(phase == Phase.AI_TURN) {
+			opponent.update();
+		}
 	}
 	/*checks if the game is over by seeing the health of both players*/
 	private boolean checkIfOver() {
@@ -187,28 +206,39 @@ public class DuelingState extends InteractionPane implements State{
 		setMouseY((int) (getMouseY() + -(cam.getY())));
 		cardInfoPane.mouseMoved(e);
 		activateCardPane.mouseMoved(e);
+		pickCardPane.mouseMoved(e);
 	}
 	
 	@Override
 	/*if you click on your hand*/
 	public void mousePressed(MouseEvent e) {
 		//when you click on your hand
-		if(!activateCardPane.isDisplaying()) {
-			if(mouseOver(player.getHand().getBounds())) {
-				clickOnHand(e);
+		if(phase == Phase.PLAYERS_TURN) {
+			if(opponent.isAiPhaseDone()) {
+				
+				if(!activateCardPane.isDisplaying() && !pickCardPane.isStartedPhase()) {
+					if(mouseOver(player.getHand().getBounds())) {
+						clickOnHand(e);
+					}
+				}
+				//click on end turn and switch the phase if it is ur turn 
+				if(canScroll && mouseOver(board.getPlayerEndTurnBounds()) && phase == Phase.PLAYERS_TURN && !pickCardPane.isStartedPhase()) {
+					//phase = Phase.AI_TURN;
+					//perform the action for switching turns here
+					actionHandler.getAction(ActionList.END_TURN).performAction(player,board.getPlayerField(),Phase.AI_TURN);
+					actionHandler.getAction(ActionList.START_TURN).performAction(opponent);
+				}
+		
+				if(!pickCardPane.isStartedPhase()) {
+					activateCardPane.mousePressed(e);
+				}
+				
+		
+				if(pickCardPane.isStartedPhase()) {
+					pickCardPane.mousePressed(e);
+				}
 			}
 		}
-		//click on end turn and switch the phase if it is ur turn 
-		if(canScroll && mouseOver(board.getPlayerEndTurnBounds()) && phase == Phase.PLAYERS_TURN) {
-			//phase = Phase.AI_TURN;
-			//perform the action for switching turns here
-			actionHandler.getAction(ActionList.END_TURN).performAction(player,board.getPlayerField(),Phase.AI_TURN);
-			actionHandler.getAction(ActionList.START_TURN).performAction(opponent);
-		}
-		
-		activateCardPane.mousePressed(e);
-		
-		
 	}
 	
 	/*loop through the players hand 
@@ -246,6 +276,7 @@ public class DuelingState extends InteractionPane implements State{
 	@Override
 	/*if you are dragging then try and play your card*/
 	public void mouseReleased(MouseEvent e) {
+		//if(attackingState.isStarted()) {return;}
 		if(canDrag) {
 			if(draggedSpotList == null) {return;}
 			canDrag = false;
@@ -266,7 +297,7 @@ public class DuelingState extends InteractionPane implements State{
 		}
 		//set everything back to default
 		draggedSpot = null;
-		draggedSpotList = null;
+	//	draggedSpotList = null;
 		draggedPoint = new Point(0,0);
 		draggingBounds = new Rectangle();
 	}
@@ -311,9 +342,14 @@ public class DuelingState extends InteractionPane implements State{
 		renderAllCards(g);///all cards on every field, and every hand
 		renderDraggedCards(g);//the current dragged card needs to be rendered
 		activateCardPane.render(g);
+		pickCardPane.render(g);
 		g.translate(-cam.getX(), -cam.getY());
 		renderOutsideOfCamera(g);//not affected by camera
-		
+		renderAi(g);
+	}
+	
+	private void renderAi(Graphics2D g) {
+		opponent.renderTextPopupPane(g);
 	}
 	/*renders the board and the players hands, and all the effects on the hand and board. (colours)*/
 	private void renderDuelState(Graphics2D g) {
@@ -344,10 +380,10 @@ public class DuelingState extends InteractionPane implements State{
 	private void renderOutsideOfCamera(Graphics2D g) {
 		cardInfoPane.render(g);
 		renderGraphicalEffects(g);
-		
 	}
 	/*if you are currently dragging draw the cards image based on the dragged point*/
 	private void renderDraggedCards(Graphics2D g) {
+		if(pickCardPane.isStartedPhase()) {return;}
 		if(canDrag) {
 			if(draggedSpot == null) {return;}
 			g.drawImage(draggedSpot.getCard().getImage(), draggingBounds.x,draggingBounds.y,
@@ -357,6 +393,7 @@ public class DuelingState extends InteractionPane implements State{
 	
 	/*render the black or blue colours that you see*/
 	private void renderEffectsOnBoard(Graphics2D g) {
+		if(pickCardPane.isStartedPhase()) {return;}
 		if(!canScroll) {return;}
 		for(int i =0; i < board.getPlayerField().allCardSpots().size();i++) {
 			Spot spot = board.getPlayerField().allCardSpots().get(i);
@@ -368,8 +405,22 @@ public class DuelingState extends InteractionPane implements State{
 						g.drawRect(spot.getBounds().x, spot.getBounds().y, spot.getBounds().width, spot.getBounds().height);
 					}
 					else {
-						renderCornerHover(g,spot.getBounds(),new Color(0, 102,204),5);
+						renderCornerHover(g,spot.getBounds(),board.getFourCornerHoverColour(),5);
 					}
+				}
+			}
+		}
+		renderDraggingEffectsOnBoard(g);
+	}
+	
+	private void renderDraggingEffectsOnBoard(Graphics2D g) {
+		if(draggedSpotList == null) {return;}
+		if(canDrag && draggedSpotList != null) {
+			for(int i =0; i< draggedSpotList.size();i++) {
+				if(draggedSpotList.get(i).isOpen()) {
+					g.setColor(board.getDraggingSpotColour());
+					g.setStroke(new BasicStroke(3));
+					g.draw(draggedSpotList.get(i).getBounds());
 				}
 			}
 		}
@@ -377,6 +428,7 @@ public class DuelingState extends InteractionPane implements State{
 	
 	/*same as rendering effects on the board*/
 	private void renderEffectsOnHand(Graphics2D g) {
+		if(pickCardPane.isStartedPhase()) {return;}
 		if(!canScroll) {return;}
 		for(int i =0; i < player.getHand().getSpots().size();i++) {
 			Spot spot = player.getHand().getSpots().get(i);
@@ -417,7 +469,7 @@ public class DuelingState extends InteractionPane implements State{
 		if(phase == Phase.AI_TURN) {
 			g.setColor(Color.GRAY);
 		}
-		if(!(phase == Phase.AI_TURN) && canScroll) {
+		if(!(phase == Phase.AI_TURN) && canScroll && !pickCardPane.isStartedPhase()) {
 			this.changeColour(g, board.getPlayerEndTurnBounds(), new Color(220,220,220), Color.WHITE);
 		}
 		g.fill(board.getPlayerEndTurnBounds());
@@ -439,9 +491,10 @@ public class DuelingState extends InteractionPane implements State{
 			
 	}
 	/*render the blue corner hover effect*/
-	private void renderCornerHover(Graphics2D g,Rectangle bounds,Color col,int strokeWidth) {
+	public void renderCornerHover(Graphics2D g,Rectangle bounds,Color col,int strokeWidth) {
 		g.setColor(col);
 		g.setStroke(new BasicStroke(strokeWidth));
+		
 		//top left
 		//horizontal
 		g.drawLine(bounds.x -bounds.width/10, bounds.y - bounds.height/12, bounds.x + bounds.width/5,bounds.y - bounds.height/12);
@@ -496,6 +549,8 @@ public class DuelingState extends InteractionPane implements State{
 			}
 		}
 	}
+	
+	public PickCardPane getPickCardPane() {return pickCardPane;}
 	
 	public Field getPlayerField() {return board.getPlayerField();}
 	public Field getOpponentField() {return board.getOpponentField();}

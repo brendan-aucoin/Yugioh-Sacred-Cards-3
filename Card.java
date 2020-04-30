@@ -9,6 +9,10 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import actions.Action;
+import actions.ActionHandler;
+import actions.ActionList;
+import boards.Board;
 import file_loader.FileLoader;
 import game.Game;
 import images.Texture;
@@ -16,6 +20,7 @@ import types.CardType;
 
 public abstract class Card implements Cloneable, Comparable<Card>{
 	private BufferedImage image;
+	private BufferedImage defenseImage,upsideDownImage;
 	private String name;
 	private int capacity;//how much deck capacity they take up
 	private double price;//their in game price
@@ -27,6 +32,7 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	private int maxFrequency;//how many of this card can appear in your deck. i.e you can only have 1 change of heart in your deck. but you can have 3 dorons.
 	private boolean revealed;
 	private boolean firstTurn;
+	private ActionHandler actionHandler;
 	public Card(int cardId,CardType type) throws FileNotFoundException {//you must throw fileNotFoundException because all cards read from a text file to get their base stats
 		this.cardId = cardId;
 		this.type = type;
@@ -45,6 +51,9 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 		fileLoader = new FileLoader();
 		this.maxFrequency = 3;
 		this.revealed = true;
+		actionHandler = new ActionHandler();
+		createDefenseImage();
+		createUpsideDownImage();
 		//init();
 	}
 	
@@ -57,6 +66,9 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 		fileLoader.setFileName(Game.TEXTS_PATH + Game.CARD_STATS);
 		createBaseStats();
 		normalizeName();
+		actionHandler = new ActionHandler();
+		createDefenseImage();
+		createUpsideDownImage();
 	}
 	/*this is for reading from the file because the Cards name has spaces in it becuase its easier to read but the file will contain _ ie change_of_heart*/
 	public void normalizeName() {
@@ -103,8 +115,16 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	public int compareTo(Card c) {
 		if(this.cardId > c.cardId) {return 1;}
 		else if(this.cardId < c.cardId) {return -1;}
-		else {return 0;}
+		else{return 0;}
 	}
+	
+	private void createDefenseImage() {
+		defenseImage = Texture.rotate90(image);
+	}
+	private void createUpsideDownImage() {
+		upsideDownImage = Texture.rotate180(image);
+	}
+	protected Action getAction(ActionList action) {return actionHandler.getAction(action);}
 	
 	/*getters and setters*/
 	public BufferedImage getImage() {return image;}
@@ -129,6 +149,7 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	public void setRevealed(boolean revealed) {this.revealed = revealed;}
 	public boolean isFirstTurn() {return firstTurn;}
 	public void setFirstTurn(boolean firstTurn) {this.firstTurn = firstTurn;}
-
+	public BufferedImage getDefenseImage() {return defenseImage;}
+	public BufferedImage getUpsideDownImage() {return upsideDownImage;}
 	
 }

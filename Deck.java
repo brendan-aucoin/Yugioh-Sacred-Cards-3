@@ -83,7 +83,7 @@ public class Deck extends CardHolder{
 	public boolean empty() {
 		return size() == 0;
 	}
-	
+	/*returns all of your cards printed on seperate lines*/
 	public String toString() {
 		String result = "";
 		for(int i =0; i < this.getDeck().size();i++) {

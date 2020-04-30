@@ -80,6 +80,9 @@ public abstract class Monster extends Card{
 	public boolean weakTo(Attribute attribute) {
 		return (weaknesses.contains(attribute));
 	}
+	public boolean weakTo(Monster m) {
+		return weakTo(m.getAttribute());
+	}
 	@Override
     public Monster clone() throws CloneNotSupportedException 
     { 

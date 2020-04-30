@@ -23,6 +23,7 @@ public class RegularBoard extends Board{
 	private BasicStroke middleLineStroke;
 	public RegularBoard(Game game) {
 		super(game,BoardType.REGULAR);
+		
 	}
 	
 	//the regular board doesnt need to update anything
@@ -37,6 +38,9 @@ public class RegularBoard extends Board{
 		whiteTileImage = getGame().getImageLoader().loadImage("dueling_images","whiteTileBoard.png");
 		background = getGame().getImageLoader().loadImage("dueling_images","regular board background.png");
 		middleLineStroke = new BasicStroke(6);
+		setDraggingSpotColour(new Color(255,215,0));
+		setFourCornerHoverColour(new Color(0, 102,204));
+		
 	}
 	//the abstract method but the regular board does nothing for buffs.
 	public void buffCard(Card c) {}

@@ -1,3 +1,8 @@
+/*
+ * Brendan Aucoin
+ *03/30/2020
+ *removes a card from the board and field that you pass in
+ * */
 package actions;
 
 import boards.Board;

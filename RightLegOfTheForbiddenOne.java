@@ -8,6 +8,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
+import boards.Board;
 import dueling.Field;
 import player.Duelist;
 
@@ -19,12 +20,15 @@ public class RightLegOfTheForbiddenOne extends EffectMonster{
 
 	@Override
 	/*loops through the players field and if they have all 5 pieces of exodia then they set the opponents life points to 0*/
-	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		
+	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
+		System.out.println("check all exodia");
 	}
 
 	@Override
 	public String effectText() {
 		return "If player has all 5 pieces of exodia on the field then you win";
+	}
+	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+		return false;
 	}
 }
