@@ -17,18 +17,17 @@ import player.Duelist;
 public class Doron extends EffectMonster{
 	public Doron() throws FileNotFoundException {
 		super(CardList.DORON.ordinal(),Attribute.WATER);
+		
 	}
 
 	@Override
 	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
-		System.out.println("clone itself");
 		for(int i =0; i < playerField.getMonsterSpots().size();i++) {
 			Spot spot = playerField.getMonsterSpots().get(i);
 			if(spot.isOpen()) {
-				Doron doron = null;
+				Monster doron = null;
 				try {doron = new Doron();} catch (FileNotFoundException e) {e.printStackTrace();return;}
-				//Card card,Spot boardSpot,Board board,Field field
-				getAction(ActionList.SUMMON_CARD).performAction(doron,spot,board,playerField);
+				getAction(ActionList.SUMMON_CARD).performAction(doron,spot,player,opponent,board,playerField,opponentField);
 				break;
 			}
 		}
@@ -38,8 +37,9 @@ public class Doron extends EffectMonster{
 	public String effectText() {
 		return "Clones itself";
 	}
-	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
-		return true;
+	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
+		return  playerField.getMonsterCards().size() != 5;
 	}
+	
 	
 }

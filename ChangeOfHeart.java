@@ -20,7 +20,7 @@ public class ChangeOfHeart extends SpellCard{
 
 	@Override
 	public void effect(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
-		System.out.println("Chagne of heart");
+		
 	}
 
 	

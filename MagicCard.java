@@ -7,7 +7,6 @@ package cards;
 
 import java.io.FileNotFoundException;
 
-import card_effects.CardEffect;
 import dueling.Field;
 import player.Duelist;
 import types.CardType;

@@ -7,6 +7,7 @@ package actions;
 
 import boards.Board;
 import cards.Monster;
+import cards.Token;
 import dueling.Field;
 import dueling.Spot;
 import player.Duelist;
@@ -18,7 +19,7 @@ public class TributeAction extends Action{
 	 * and remove the card from the board*/
 	@Override
 	public void performAction(Monster card,Duelist player,Spot tributeSpot,Board board,Field field) {
-		if(!player.hasPlayedCard()) {
+		if(!player.hasPlayedCard() && !(card instanceof Token)) {
 			player.setNumTributes(player.getNumTributes()+1);
 			DuelingState.actionHandler.getAction(ActionList.REMOVE_CARD).performAction(tributeSpot, board, field);
 		}

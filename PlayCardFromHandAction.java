@@ -15,16 +15,16 @@ import player.Duelist;
 
 public class PlayCardFromHandAction extends Action{
 	public PlayCardFromHandAction() {}
-	
-	public void performAction(Duelist player,Spot handSpot,Spot boardSpot,Board board,Field field) {
-		playCardFromHand(player,handSpot,boardSpot,board,field);
+	@Override
+	public void performAction(Duelist player,Spot handSpot,Spot boardSpot,Board board,Field playerField,Duelist opponent,Field opponentField) {
+		playCardFromHand(player,handSpot,boardSpot,board,playerField,opponent,opponentField);
 	}
 	
 	
 	/*loop through whichever dragged spot list is initialized 
 	 * if you mouse is inside the bounds then summon that card */
-	private void playCardFromHand(Duelist player,Spot handSpot,Spot boardSpot,Board board,Field field) {
-		boolean playedCard = summonCard(handSpot.getCard(),boardSpot,board,player,field);
+	private void playCardFromHand(Duelist player,Spot handSpot,Spot boardSpot,Board board,Field field,Duelist opponent,Field opponentField) {
+		boolean playedCard = summonCard(handSpot,boardSpot,board,player,field,opponent,opponentField);
 		if(playedCard) {
 			setPlayedCard(player,handSpot.getCard());
 			player.playCardFromHand(handSpot);
@@ -37,10 +37,15 @@ public class PlayCardFromHandAction extends Action{
 			player.setPlayedCard(true);
 		}
 	}
+	
+	
+	//Spot c,Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board
+	
 	/*if the spot is open and the card is a monster and the tribute cost is <= to how many tributes you have
 	 * set the players current tribute cost and set the card on the spot and add it to the proper lists and buff the card*/
-	public boolean summonCard(Card card,Spot boardSpot,Board board,Duelist player,Field field) {
+	public boolean summonCard(Spot handSpot,Spot boardSpot,Board board,Duelist player,Field field,Duelist opponent,Field opponentField) {
 			if(boardSpot.isOpen()) {
+				Card card = handSpot.getCard();
 				if(card instanceof Monster) {
 					Monster monster = (Monster)card;
 					if(monster.getTributeCost() <= player.getNumTributes()) {
@@ -51,10 +56,10 @@ public class PlayCardFromHandAction extends Action{
 						return false;
 					}
 				}
+				board.buffCard(card,player,opponent,field,opponentField);
 				boardSpot.setCard(card);
 				field.addCardToField(card);
 				boardSpot.setOpen(false);
-				board.buffCard(card);
 				card.setFirstTurn(true);
 				card.setRevealed(true);
 				return true;

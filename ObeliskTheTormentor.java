@@ -28,7 +28,7 @@ public class ObeliskTheTormentor extends EffectMonster{
 		return "Sets atk and def of all opponents monsters to 0.";
 	}
 	
-	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
 		return false;
 	}
 }

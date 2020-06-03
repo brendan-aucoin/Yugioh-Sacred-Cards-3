@@ -68,7 +68,8 @@ public class CardInfoPane extends EffectPane{
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,backgroundAlpha));
 		g.fill(getBounds());
 		
-		if(displayCard != null && displayCard.isRevealed()) {
+		if(displayCard != null) {
+			if(aiMagicField && !displayCard.isRevealed()) {return;}
 			renderName(g);		
 			renderIcons(g);
 			renderStats(g);
@@ -108,71 +109,68 @@ public class CardInfoPane extends EffectPane{
 		//if the card is a monster then get the abbreiation of the monsters attribute
 		if(displayCard instanceof Monster) {
 			Monster displayMonster = (Monster)displayCard;
+			g.setColor(displayMonster.getAttribute().getCol());
 			switch(displayMonster.getAttribute()) {
 			case LIGHT:
-				g.setColor(new Color(224,255,255));
 				attributeText = "LGT";
 				attributeTextColour = Color.BLACK;
 				break;
 			case DARK:
-				g.setColor(Color.BLACK);
 				attributeText = "DARK";
 				attributeTextColour = Color.WHITE;
 				break;
 				
 			case FIEND:
-				g.setColor(new Color(139,0,139));
 				attributeText = "FND";
 				attributeTextColour = Color.WHITE;
 				break;
 			case DREAM:
-				g.setColor(new Color(216,191,216));
 				attributeText = "DRM";
 				attributeTextColour = Color.BLACK;
 				break;
 				
 			case FIRE:
-				g.setColor(new Color(204,0,0));
 				attributeText = "FIRE";
 				attributeTextColour = Color.WHITE;
 				break;
 			
 			case GRASS:
-				g.setColor(new Color(0,204,0));
 				attributeText = "FOR";
 				attributeTextColour = Color.WHITE;
 				break;
 				
 			case WATER:
-				g.setColor(new Color(0,0,204));
 				attributeText = "WAT";
 				attributeTextColour = Color.WHITE;
 				break;
 			case ELECTRIC:
-				g.setColor(new Color(255,255,0));
 				attributeText = "THR";
 				attributeTextColour = Color.WHITE;
 				break;
 				
 			case EARTH:
-				g.setColor(new Color(139,69,19));
 				attributeText = "ERT";
 				attributeTextColour = Color.WHITE;
 				break;
 				
 			case WIND:
-				g.setColor(new Color(127,255,212));
 				attributeText = "WND";
 				attributeTextColour = Color.BLACK;
 				break;
 				
 			case DIVINE:
-				g.setColor(new Color(75,0,130));
 				attributeText = "DIV";
 				attributeTextColour = Color.WHITE;
 				break;
+			
+			default:
+				g.setColor(Color.BLACK);
+				attributeText = "NON";
+				attributeTextColour = Color.WHITE;	
 			}
+			
 		}
+		
 		
 		//if its a magic card then find out if its a spell or trap
 		else if (displayCard instanceof MagicCard) {

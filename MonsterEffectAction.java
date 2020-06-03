@@ -9,6 +9,7 @@ import boards.Board;
 import cards.EffectMonster;
 import cards.Monster;
 import dueling.Field;
+import player.Ai;
 import player.Duelist;
 
 public class MonsterEffectAction extends Action{
@@ -25,7 +26,13 @@ public class MonsterEffectAction extends Action{
 				effectCard.setInDefense(false);
 				effectCard.setUsedEffect(true);
 				effectCard.setRevealed(true);
+				if(player instanceof Ai) {
+					Ai ai = (Ai)player;
+					ai.setUsedMonsterIndex(ai.getUsedMonsterIndex()+1);
+					ai.signalUseMonsters();
+				}
 			}
 		}
+		
 	}
 }

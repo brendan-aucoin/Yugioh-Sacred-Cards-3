@@ -28,7 +28,7 @@ public class RightLegOfTheForbiddenOne extends EffectMonster{
 	public String effectText() {
 		return "If player has all 5 pieces of exodia on the field then you win";
 	}
-	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
 		return false;
 	}
 }

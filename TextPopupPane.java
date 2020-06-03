@@ -45,9 +45,11 @@ public class TextPopupPane extends EffectPane{
 		super.update();
 		if(isStart()) {
 			getDuelingState().setCanScroll(false);
+			getDuelingState().setCanAct(false);
 			ticks++;
 			if(ticks >= time) {
 				setStart(false);
+				getDuelingState().setCanAct(true);
 				getDuelingState().setCanScroll(true);
 				if(ai != null) {
 					ai.signalTextPopupPane();

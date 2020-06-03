@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import actions.ActionList;
 import cards.Card;
 import cards.EffectMonster;
-import cards.MagicCard;
 import cards.Monster;
 import cards.SpellCard;
 import game.Game;

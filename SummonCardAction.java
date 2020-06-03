@@ -10,15 +10,16 @@ import boards.Board;
 import cards.Card;
 import dueling.Field;
 import dueling.Spot;
+import player.Duelist;
 
 public class SummonCardAction extends Action{
 	@Override
-	public void performAction(Card card,Spot boardSpot,Board board,Field field) {
+	public void performAction(Card card,Spot boardSpot,Duelist player,Duelist opponent,Board board,Field playerField,Field opponentField) {
 		if(boardSpot.isOpen()) {
 			boardSpot.setCard(card);
-			field.addCardToField(card);
+			playerField.addCardToField(card);
 			boardSpot.setOpen(false);
-			board.buffCard(card);
+			board.buffCard(card,player,opponent,playerField,opponentField);
 			card.setFirstTurn(true);
 			card.setRevealed(true);
 			card.setUsedAction(true);

@@ -11,18 +11,24 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.io.IOException;
 
-import boards.RegularBoard;
-import cards.Card;
+import attributes.Attribute;
+import boards.Board;
+import boards.BoardType;
+import boards.ElementalBoard;
 import cards.CardHandler;
+import dueling.CardHolder;
 import dueling.Deck;
 import gui.Display;
+import gui.SplashScreen;
 import images.BufferedImageLoader;
 import images.Texture;
+import input.KeyManager;
 import input.MouseManager;
 import player.Ai;
 import player.Player;
+import states.BuildDeckState;
 import states.DuelingState;
 import states.State;
 import states.StateList;
@@ -40,11 +46,13 @@ public class Game  implements Runnable{
 	private Thread thread;
 	//gui
 	private Display display;
+	private SplashScreen splashScreen;
 	//images
 	private BufferedImageLoader imageLoader;
 	public static Texture texture;
 	//input
 	private MouseManager mouseManager;
+	private KeyManager keyManager;
 	//state
 	private StateManager stateManager;
 //	private MainMenuState mainMenu;
@@ -54,70 +62,76 @@ public class Game  implements Runnable{
 	//cards
 	private CardHandler cardHandler;
 	//get rid of 
-	private RegularBoard board;
+	private Board board;
 	private Player player;
 	private Ai opponent;
 	public static Deck baseDeck;
-	public static ArrayList<Card> allCards;
 	
-	
-	public Game() {
+	public Game(SplashScreen splashScreen) {
+		this.splashScreen = splashScreen;
 		running = false;
 		//initialize all the objects for states and managers
 		display = new Display();
 		
 		imageLoader = new BufferedImageLoader();
-		
 		texture = new Texture();
+		
+		try {
+			texture.loadTextures();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		
 		cardHandler = new CardHandler();
-		/*mainMenu = new MainMenuState(this);
-		duelingState = new DuelingState(this);
-		attackingState = new AttackingState(this);*/
 	}
 	
 	/*add all the input listeners and sets starting state of the game*/
-	private void init() {
+	public void init() {
 		//get rid of
-		board = new RegularBoard(this);
+		BoardType regularBoard = new ElementalBoard(Attribute.NOTHING);
+		board = new Board(this,regularBoard);
 		
 		stateManager = new StateManager(this);
 		mouseManager = new MouseManager(stateManager);
-		
+		keyManager = new KeyManager(stateManager);
 		//get rid of
 		player = new Player("Brendan");
 		opponent = new Ai((DuelingState)stateManager.getState(StateList.DUELING),"Opponent");
 		
 		//get rid of
 		DuelingState duelingState = (DuelingState)(stateManager.getState(StateList.DUELING));
-		duelingState.setPlayer(player);
-		duelingState.setBoard(board);
-		duelingState.setHandBounds();
-		duelingState.setOpponent(opponent);
 		
 		//get rid of
 		Deck tempDeck = new Deck("Temp deck");
+		CardHolder trunk = new CardHolder();
 		try {
 			tempDeck.createDeck(TEXTS_PATH + "temp base deck.txt");
+			trunk.createList(TEXTS_PATH + "temp base trunk.txt");
 		} catch (FileNotFoundException e) {
 			System.err.println("COULD NOT LOAD FILE");
 			System.exit(0);
 		}
 		player.setDeck(new Deck(tempDeck,"Player deck"));
+		player.setTrunk(trunk);
 		opponent.setDeck(new Deck(tempDeck,"AI deck"));
-		player.shuffle();
-		opponent.shuffle();
-		
-		/*set up all the mouse stuff and keyboard stuff*/
+		///set up all the mouse stuff and keyboard stuff
 		display.getCanvas().addMouseListener(mouseManager);
 		display.getCanvas().addMouseMotionListener(mouseManager);
 		display.getCanvas().addMouseWheelListener(mouseManager);
-		/*set up all managers like state manager*/
-		stateManager.setState(StateList.DUELING);
+		display.getCanvas().addKeyListener(keyManager);
+		//set up all managers like state manager
+		BuildDeckState buildDeckState = (BuildDeckState)(stateManager.getState(StateList.BUILD_DECK));
+		buildDeckState.editDeck(player.getDeck());
+		//buildDeckState.makeNewDeck();
+		buildDeckState.startState(player);
 		
-		duelingState.startDuel();
-		/*end of method*/
-	
 		
+		stateManager.setState(StateList.BUILD_DECK);
+		
+		duelingState.startDuel(player,opponent,board);
+		//end of method
+		
+		splashScreen.dissapear();//put back in
 		display.getFrame().setVisible(true);
 	}
 	
@@ -145,7 +159,7 @@ public class Game  implements Runnable{
 	
 	/*make the game 60fps */
 	public void run() {
-		init();
+		//init();//get rid of 
 		int fps = 60;
 		double timePerTick = 1000000000/fps;
 		double delta = 0;

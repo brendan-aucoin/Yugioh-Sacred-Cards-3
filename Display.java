@@ -21,7 +21,7 @@ public class Display {
 	private JFrame frame;
 	public static final Dimension SCREEN_SIZE = Toolkit.getDefaultToolkit().getScreenSize();
 	//public static final Dimension SCREEN_SIZE = new Dimension(750,600);
-	
+	//lowest possible  = 975x700
 	public static final Rectangle FULL_SCREEN = new Rectangle(0,0,SCREEN_SIZE.width,SCREEN_SIZE.height);
 	private Canvas canvas;
 	public Display() {
@@ -40,6 +40,7 @@ public class Display {
 		canvas.setMaximumSize(SCREEN_SIZE);
 		canvas.setMinimumSize(SCREEN_SIZE);
 		canvas.setFocusable(true);
+		
 		
 		frame.add(canvas);
 	}

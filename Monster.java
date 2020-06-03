@@ -13,6 +13,7 @@ import attributes.Attribute;
 import types.CardType;
 
 public abstract class Monster extends Card{
+	public static final int BUFF = 500;
 	private int attack;
 	private int defense;
 	private boolean inDefense;//if they are set in defense mode for the turn
@@ -83,6 +84,7 @@ public abstract class Monster extends Card{
 	public boolean weakTo(Monster m) {
 		return weakTo(m.getAttribute());
 	}
+	
 	@Override
     public Monster clone() throws CloneNotSupportedException 
     { 

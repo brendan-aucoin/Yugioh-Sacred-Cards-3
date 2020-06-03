@@ -20,7 +20,6 @@ public class MysticalSpaceTyphoon extends TrapCard{
 	@Override
 	/*loops through the opponents magic spots and gets rid of all cards*/
 	public boolean effect(Spot attackingSpot,Spot receivingSpot,Duelist attacker,Duelist receiver,Field attackersField,Field receiversField,Board board) {
-		System.out.println("SPACE TYPHOON");
 		return false;
 	}
 	@Override
@@ -31,5 +30,6 @@ public class MysticalSpaceTyphoon extends TrapCard{
 	public boolean playCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
 		return true;
 	}
+	
 	
 }

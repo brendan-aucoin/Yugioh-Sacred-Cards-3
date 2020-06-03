@@ -9,6 +9,7 @@ package cards;
 import java.io.FileNotFoundException;
 
 import attributes.Attribute;
+import boards.Board;
 import card_effects.CardEffect;
 import dueling.Field;
 import player.Duelist;
@@ -22,9 +23,6 @@ public abstract class EffectMonster extends Monster implements CardEffect{//exte
 	public EffectMonster(EffectMonster m) {
 		super(m);
 	}
-	public String toString() {
-		return super.toString();
-	}
 	
 	@Override
     public EffectMonster clone() throws CloneNotSupportedException 
@@ -32,7 +30,7 @@ public abstract class EffectMonster extends Monster implements CardEffect{//exte
         return (EffectMonster) super.clone(); 
     } 
 	
-	public abstract boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField);
+	public abstract boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board);
 	
 	public boolean hasUsedEffect() {return usedEffect;}
 	public void setUsedEffect(boolean usedEffect) {this.usedEffect = usedEffect;}

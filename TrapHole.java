@@ -7,19 +7,19 @@ package cards;
 
 import java.io.FileNotFoundException;
 
+import actions.ActionList;
 import boards.Board;
 import dueling.Field;
 import dueling.Spot;
 import player.Duelist;
+import states.DuelingState;
 
 public class TrapHole extends TrapCard{
 	public TrapHole() throws FileNotFoundException {
 		super(CardList.TRAP_HOLE.ordinal());
-		setMaxFrequency(100);
 	}
 	
 	public boolean effect(Spot attackingSpot,Spot receivingSpot,Duelist attacker,Duelist receiver,Field attackersField,Field receiversField,Board board) {
-		System.out.println("TRAP HOLE");
 		Card c = attackingSpot.getCard();
 		if(c==null) {return false;}
 		if(c instanceof Monster) {

@@ -6,8 +6,16 @@
 package images;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
+
+import attributes.Attribute;
 import boards.Board;
+import cards.CardList;
+import game.Game;
 
 public class Texture {
 	private BufferedImageLoader loader;
@@ -17,22 +25,32 @@ public class Texture {
 	public static BufferedImage [] swordSlash = new BufferedImage[10];
 	private SpriteSheet swordSlashSheet;
 	private BufferedImage swordSlashSheetImage;
+	public static String error = "fg ";
+	//all the board sprites
+	public static ArrayList<NamedImage> boardImages;
+	
 	public Texture() {
 		loader = new BufferedImageLoader();
+	}
+	public void loadTextures() throws IOException {
 		loadCardSprites();
 		loadSlashingSpriteSheets();
+		loadBoardImages();
 	}
-	
 	/*load every card sprite from the card sprite sheet*/
-	private void loadCardSprites() {
+	private void loadCardSprites() throws IOException {
 		backOfCardImage = loader.loadImage("dueling_images", "backOfCard.png");
 		backOfCardImageRotated90 = rotate90(backOfCardImage);
 		cardSprites = new BufferedImage[2000];
-		BufferedImage cardSheetImage = loader.loadImage("dueling_images", "card sprite sheet.png");
-		SpriteSheet cardSheet = new SpriteSheet(cardSheetImage);
-		cardSprites = readFromSheet(cardSprites,cardSheet,2,10,177,254);
+		//BufferedImage cardSheetImage = loader.loadImage("dueling_images", "card sprite sheet.png");
+		//SpriteSheet cardSheet = new SpriteSheet(cardSheetImage);
+		//cardSprites = readFromSheet(cardSprites,cardSheet,2,10,177,254);
+		String cardPath = Game.RES_PATH + "cards\\";
+		for(int i =0; i < CardList.values().length;i++) {
+			cardSprites[i] = ImageIO.read(new File(cardPath + CardList.values()[i].name() +".jpg"));
+		}
+		
 	}
-	
 	private void loadSlashingSpriteSheets() {
 		swordSlashSheetImage = loader.loadImage("sprite_sheets","fire_sword_slash_sprite_sheet.png");
 		swordSlashSheet = new SpriteSheet(swordSlashSheetImage);
@@ -100,5 +118,23 @@ public class Texture {
 	      }
 	    }
 	    return sprites;
+	  }
+	  
+	  private void loadBoardImages() {
+		  boardImages = new ArrayList<NamedImage>();
+		  for(int i=0; i < Attribute.values().length;i++) {
+			  Attribute attribute = Attribute.values()[i];
+			  //this if statement wont be here in the future but for now only a couple of images exist
+			  if(attribute.getName().equalsIgnoreCase("regular") || attribute.getName().equalsIgnoreCase("water")) {
+				  loadBoardImage(attribute.getName().toLowerCase(),"background");
+				  loadBoardImage(attribute.getName().toLowerCase(),"even_tile");
+				  loadBoardImage(attribute.getName().toLowerCase(),"odd_tile");
+			  }
+		  }
+	  }
+	  
+	  private void loadBoardImage(String attribute,String name) {
+		  String path = attribute + "_board_" + name;
+		  boardImages.add(new NamedImage(loader.loadImage("dueling_images",path + ".png"),path));
 	  }
 }

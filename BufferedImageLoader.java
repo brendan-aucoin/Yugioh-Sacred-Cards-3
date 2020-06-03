@@ -20,7 +20,7 @@ public class BufferedImageLoader
   {
 	//try{image = ImageIO.read(this.getClass().getResource("/" + "" + dirName + "/" + "" +  path));}catch(IOException e) {System.err.println("there was a problem loading the level");}
 	  try {
-		  image = ImageIO.read(new File(Game.RES_PATH + "" + dirName + "/" + "" + path));
+		  image = ImageIO.read(new File(Game.RES_PATH  + dirName + "\\"  + path));
 	  }catch(IOException e) {System.err.println("Could not load image");}
 	  return image;
   }

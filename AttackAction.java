@@ -6,6 +6,7 @@ import cards.Monster;
 import dueling.Field;
 import dueling.Spot;
 import game.Game;
+import player.Ai;
 import player.Duelist;
 import states.AttackingState;
 import states.DuelingState;
@@ -18,12 +19,14 @@ public class AttackAction extends Action{
 		if(DuelingState.firstTurn) {
 			useAttackersCard(attackersMonsterSpot.getCard());
 			return;
-			}
+		}
 		
 		//do the trap action
-		DuelingState.actionHandler.getAction(ActionList.ACTIVATE_TRAP).performAction(
-				attackersMonsterSpot,recieversMonsterSpot,attacker,reciever,attackersField,receiversField,board
-		);
+		if(!attackersMonsterSpot.getCard().hasUsedAction()) {
+			DuelingState.actionHandler.getAction(ActionList.ACTIVATE_TRAP).performAction(
+					attackersMonsterSpot,recieversMonsterSpot,attacker,reciever,attackersField,receiversField,board
+			);
+		}
 		
 		if(attackersMonsterSpot == null || attackersMonsterSpot.getCard() == null) {return;} //some traps will destory the monters making it null	
 		

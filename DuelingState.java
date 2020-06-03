@@ -60,6 +60,7 @@ public class DuelingState extends InteractionPane implements State{
 	public static Phase phase;
 	public static ActionHandler actionHandler;
 	public static boolean firstTurn;
+	private boolean canAct;
 	public DuelingState(Game game) {
 		super(game,Display.FULL_SCREEN);
 		cam = new Camera(0,0);
@@ -84,6 +85,7 @@ public class DuelingState extends InteractionPane implements State{
 		draggingBounds = new Rectangle();
 		actionHandler = new ActionHandler();
 		firstTurn = true;
+		canAct = true;
 	}
 	
 	/*needs to do this first after you set the board*/
@@ -98,7 +100,11 @@ public class DuelingState extends InteractionPane implements State{
 		
 	}
 	/*this is called every time you talk to an enemy */
-	public void startDuel() {
+	public void startDuel(Player player,Ai opponent,Board board) {
+		setPlayer(player);
+		setBoard(board);
+		setHandBounds();
+		setOpponent(opponent);
 		firstTurn = true;
 		//sets the boards players
 		board.setPlayer(player);
@@ -117,8 +123,8 @@ public class DuelingState extends InteractionPane implements State{
 		opponent.getHand().init();
 		
 		//shuffle the decks
-		player.getDeck().shuffle();
-		opponent.getDeck().shuffle();
+		player.shuffle();
+		opponent.shuffle();
 		//always start by drawing 5 cards
 		player.draw(5);
 		opponent.draw(5);
@@ -153,8 +159,8 @@ public class DuelingState extends InteractionPane implements State{
 			changeTurn(player);
 		}
 		else {
-		firstPlayer = opponent;
-		changeTurn(opponent);
+		firstPlayer = player;
+		changeTurn(player);
 		}
 		String nameSuffix = firstPlayer.getName().charAt(0) == 's' || firstPlayer.getName().charAt(0) == 'S' ? "'": "'s";
 		startTurnPhase.setText("Its " + firstPlayer.getName() + nameSuffix + " turn");
@@ -214,6 +220,7 @@ public class DuelingState extends InteractionPane implements State{
 	public void mousePressed(MouseEvent e) {
 		//when you click on your hand
 		if(phase == Phase.PLAYERS_TURN) {
+			if(!canAct) {return;}
 			if(opponent.isAiPhaseDone()) {
 				
 				if(!activateCardPane.isDisplaying() && !pickCardPane.isStartedPhase()) {
@@ -291,7 +298,7 @@ public class DuelingState extends InteractionPane implements State{
 		for(int i =0; i < draggedSpotList.size();i++) {
 			Spot boardSpot = draggedSpotList.get(i);
 			if(inside(draggingBounds,boardSpot.getBounds())) {
-				actionHandler.getAction(ActionList.PLAY_CARD_FROM_HAND).performAction(player,draggedSpot,boardSpot,board,board.getPlayerField());	
+				actionHandler.getAction(ActionList.PLAY_CARD_FROM_HAND).performAction(player,draggedSpot,boardSpot,board,board.getPlayerField(),opponent,board.getOpponentField());	
 				break;
 			}
 		}
@@ -405,7 +412,7 @@ public class DuelingState extends InteractionPane implements State{
 						g.drawRect(spot.getBounds().x, spot.getBounds().y, spot.getBounds().width, spot.getBounds().height);
 					}
 					else {
-						renderCornerHover(g,spot.getBounds(),board.getFourCornerHoverColour(),5);
+						renderCornerHover(g,spot.getBounds(),board.getBoardType().getFourCornerHoverCol(),5);
 					}
 				}
 			}
@@ -415,13 +422,15 @@ public class DuelingState extends InteractionPane implements State{
 	
 	private void renderDraggingEffectsOnBoard(Graphics2D g) {
 		if(draggedSpotList == null) {return;}
-		if(canDrag && draggedSpotList != null) {
+		if(canDrag && draggedSpotList != null && draggingBounds !=null) {
 			for(int i =0; i< draggedSpotList.size();i++) {
 				if(draggedSpotList.get(i).isOpen()) {
-					g.setColor(board.getDraggingSpotColour());
-					g.setStroke(new BasicStroke(3));
+					g.setColor(board.getBoardType().getDraggingSpotCol());
+					int strokeSize = draggingBounds.intersects(draggedSpotList.get(i).getBounds()) ? 6 : 3;
+					g.setStroke(new BasicStroke(strokeSize));
 					g.draw(draggedSpotList.get(i).getBounds());
 				}
+				
 			}
 		}
 	}
@@ -566,4 +575,6 @@ public class DuelingState extends InteractionPane implements State{
 	public void setCam(Camera cam) {this.cam = cam;}
 	public void setCanScroll(boolean canScroll) {this.canScroll = canScroll;}
 	public boolean getCanScroll() {return canScroll;}
+	public void setCanAct(boolean canAct) {this.canAct = canAct;}
+	public boolean canAct() {return canAct;}
 }

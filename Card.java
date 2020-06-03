@@ -12,7 +12,6 @@ import java.util.Scanner;
 import actions.Action;
 import actions.ActionHandler;
 import actions.ActionList;
-import boards.Board;
 import file_loader.FileLoader;
 import game.Game;
 import images.Texture;
@@ -73,6 +72,9 @@ public abstract class Card implements Cloneable, Comparable<Card>{
 	/*this is for reading from the file because the Cards name has spaces in it becuase its easier to read but the file will contain _ ie change_of_heart*/
 	public void normalizeName() {
 		name = name.replace("_", " ");
+	}
+	public String reverseNormalizedName() {
+		return name.replace(" ", "_");
 	}
 	/*reads using the file loader and reads the name, capacity, and price into the cards instance variables. this is because
 	 * every card has a name, capacity, and a price monsters, traps and spells all do*/

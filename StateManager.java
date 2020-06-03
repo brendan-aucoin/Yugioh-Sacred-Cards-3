@@ -23,6 +23,7 @@ public class StateManager {
 		allStates.put(StateList.MAIN_MENU,new MainMenuState(game));
 		allStates.put(StateList.DUELING,new DuelingState(game));
 		allStates.put(StateList.ATTACKING,new AttackingState(game));
+		allStates.put(StateList.BUILD_DECK, new BuildDeckState(game));
 	}
 	
 	public void setState(StateList state) {

@@ -45,12 +45,12 @@ public class PickCardPane extends EffectPane{
 	public void render(Graphics2D g) {
 		if(spotList == null || !startedPhase) {return;}
 		for(int i =0; i < spotList.size();i++) {
-			g.setColor(getDuelingState().getBoard().getDraggingSpotColour());
+			g.setColor(getDuelingState().getBoard().getBoardType().getDraggingSpotCol());
 			g.setStroke(new BasicStroke(3));//putting a border around the spots that you can click on so the user knows which cards to pick
 			g.draw(spotList.get(i).getBounds());
 			//if you hover over a spot that has a card in it then put the corner hover effect over it.
 			if(!spotList.get(i).isOpen() && mouseOver(spotList.get(i).getBounds())) {
-				getDuelingState().renderCornerHover(g,spotList.get(i).getBounds(),getDuelingState().getBoard().getFourCornerHoverColour(),5);
+				getDuelingState().renderCornerHover(g,spotList.get(i).getBounds(),getDuelingState().getBoard().getBoardType().getFourCornerHoverCol(),5);
 			}
 		}
 	}

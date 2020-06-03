@@ -6,15 +6,12 @@
  * */
 package boards;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,28 +25,26 @@ import gui.Display;
 import images.Texture;
 import player.Duelist;
 
-public abstract class Board {
-	private BoardType type;//grass,normal,ghoul, etc.
+public class Board {
+	public static int SPOT_WIDTH = Display.SCREEN_SIZE.width/9;
+	public static int SPOT_HEIGHT = Display.SCREEN_SIZE.height/5;
+	
+	private BoardType boardType;
 	//you have two sides of the board the player field(monsters and magic cards included) and the opponent field.
 	private Field playerField;
 	private Field opponentField;
 	private Rectangle bounds;//the entire bounds of the board (the entire screen but a bit more becuase you can scroll)
-	protected final Rectangle middleLineBounds;
+	private final Rectangle middleLineBounds;
 	private Game game;
 	//used only for graphics.
 	protected AffineTransform affinetransform;
 	protected FontRenderContext frc;
 	private Duelist player,opponent;//you need access to the two players
 	private Rectangle playerEndTurnBounds,opponentEndTurnBounds;//the two buttons.
-	private AffineTransform tx;
-	private AffineTransformOp op;
-	private Color draggingSpotColour;
-	private Color fourCornerHoverColour;
-	public static int SPOT_WIDTH = Display.SCREEN_SIZE.width/9;
-	public static int SPOT_HEIGHT = Display.SCREEN_SIZE.height/5;
-	public Board(Game game,BoardType type) {
+	
+	public Board(Game game,BoardType boardType) {
 		this.game = game;
-		this.type = type;
+		this.boardType = boardType;
 		//always the screen size no matter what
 		bounds = new Rectangle(0,0,Display.SCREEN_SIZE.width,Display.SCREEN_SIZE.height);
 		
@@ -72,8 +67,6 @@ public abstract class Board {
 		));
 		affinetransform = new AffineTransform();   
 		frc = new FontRenderContext(affinetransform,true,true);
-		draggingSpotColour = Color.WHITE;
-		fourCornerHoverColour = Color.BLUE;
 		createAllSpots();
 	}
 	
@@ -114,12 +107,29 @@ public abstract class Board {
 		}
 	}
 	//all boards update
-	public abstract void update();
+	public void update() {}
 	//all boards will have some buff to a certain type of card
-	public abstract void buffCard(Card c);
+	public void buffCard(Card card,Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+		boardType.buffCard(card, player, opponent, playerField, opponentField, this);
+	}
+	
+	public void changeType(BoardType newType,Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+		if(!this.boardType.equals(newType)) {
+		this.boardType = newType;
+			boardType.updateBoard(player, opponent, playerField, opponentField, this);
+		}
+	}
 	
 	//all boards render similar things like the field
 	public void render(Graphics2D g) {
+		renderAllSpots(g);
+		renderBackground(g);
+		renderMiddleBar(g);
+		renderText(g);
+		renderTileImages(g);
+	}
+	
+	private void renderAllSpots(Graphics2D g) {
 		//players monster and magic spots
 		renderSpots(g,playerField.getMonsterSpots());
 		renderSpots(g,playerField.getMagicSpots());
@@ -128,6 +138,27 @@ public abstract class Board {
 		renderSpots(g,opponentField.getMagicSpots());
 	}
 	
+	private void renderBackground(Graphics2D g) {
+		g.drawImage(boardType.getBackground(), getBounds().x, getBounds().y - getBounds().height, getBounds().width, getBounds().height*2,null);
+	}
+	private void renderTileImages(Graphics2D g) {
+		renderTileImages(g,playerField.getMonsterSpots(),0,1);
+		renderTileImages(g,playerField.getMagicSpots(),1,0);
+		renderTileImages(g,opponentField.getMonsterSpots(),1,0);
+		renderTileImages(g,opponentField.getMagicSpots(),0,1);
+	}
+	private void renderTileImages(Graphics2D g,ArrayList<Spot> spots,int even,int odd) {
+		//half of the spots should be lighter image and the other half should be the darker image
+		for(int i =even; i < spots.size();i+=2) {
+			Spot s = spots.get(i);
+			g.drawImage(boardType.getEvenTileImage(),s.getBounds().x,s.getBounds().y,s.getBounds().width,s.getBounds().height,null);
+		}
+		
+		for(int i=odd; i < spots.size();i+=2) {
+			Spot s = spots.get(i);
+			g.drawImage(boardType.getOddTileImage(),s.getBounds().x,s.getBounds().y,s.getBounds().width,s.getBounds().height,null);
+		}
+	}
 	
 	/*renders all the player cards in their magic and monster spots*/
 	public void renderPlayersCards(Graphics2D g) {
@@ -205,9 +236,9 @@ public abstract class Board {
 		}
 	}
 	/*drawing text for life points some boards may want to add stuff in though*/
-	protected void renderText(Graphics2D g,Color col) {
+	protected void renderText(Graphics2D g) {
 		//text that goes in the middle border line to show LP and anything else you may need
-		g.setColor(col);
+		g.setColor(boardType.getTextCol());
 		g.setFont(new Font("ariel",Font.BOLD,20));
 		//drawing the players LP
 		g.drawString("Player LP: " + player.getHealth(),(int) (middleLineBounds.x +  g.getFont().getStringBounds("Player LP: " + player.getHealth(), frc).getWidth()/10),
@@ -246,10 +277,8 @@ public abstract class Board {
 		
 		return allSpots;
 	}
-	/*this will be used by all boards but can be added on to but sub classes*/
-	protected void renderMiddleArea(Graphics2D g,BasicStroke stroke,Color back,Color line) {
-		renderMiddleBar(g,stroke,back,line);
-	}
+	
+	
 	/*get a list of all the monter spots*/
 	public ArrayList<Spot> allMonsterSpots(){
 		ArrayList<Spot> allSpots = new ArrayList<Spot>();
@@ -264,18 +293,16 @@ public abstract class Board {
 	}
 	
 	/*renders the middle bar splitting the two fields*/
-	protected void renderMiddleBar(Graphics2D g, BasicStroke stroke,Color middleLineCol,Color strokeCol ) {
-		g.setColor(middleLineCol);
+	protected void renderMiddleBar(Graphics2D g) {
+		g.setColor(boardType.getMiddleAreaBackCol());
 		g.fill(middleLineBounds);
-		g.setColor(strokeCol);
-		g.setStroke(stroke);
-		g.drawLine((int) (middleLineBounds.x + middleLineBounds.width/2 - stroke.getLineWidth()), middleLineBounds.y,
-		(int) (middleLineBounds.x + middleLineBounds.width/2 - stroke.getLineWidth()), middleLineBounds.y + middleLineBounds.height);
+		g.setColor(boardType.getMiddleAreaLineCol());
+		g.setStroke(BoardType.MIDDLE_AREA_STROKE);
+		g.drawLine((int) (middleLineBounds.x + middleLineBounds.width/2 - BoardType.MIDDLE_AREA_STROKE.getLineWidth()), middleLineBounds.y,
+		(int) (middleLineBounds.x + middleLineBounds.width/2 - BoardType.MIDDLE_AREA_STROKE.getLineWidth()), middleLineBounds.y + middleLineBounds.height);
 	}
 	
 	/*getters and setters*/
-	public BoardType getType() {return type;}
-	public void setType(BoardType type) {this.type = type;}
 	public Field getPlayerField() {return playerField;}
 	public void setPlayerField(Field playerField) {this.playerField = playerField;}
 	public Field getOpponentField() {return opponentField;}
@@ -296,11 +323,6 @@ public abstract class Board {
 	public void setAffinetransform(AffineTransform affinetransform) {this.affinetransform = affinetransform;}
 	public FontRenderContext getFrc() {return frc;}
 	public void setFrc(FontRenderContext frc) {this.frc = frc;}
-	public Color getDraggingSpotColour() {return draggingSpotColour;}
-	public void setDraggingSpotColour(Color draggingSpotColour) {this.draggingSpotColour = draggingSpotColour;}
-	public Color getFourCornerHoverColour() {return fourCornerHoverColour;}
-	public void setFourCornerHoverColour(Color fourCornerHoverColour) {this.fourCornerHoverColour = fourCornerHoverColour;}
-	
-	
-	
+	public void setBoardType(BoardType boardType) {this.boardType = boardType;}
+	public BoardType getBoardType() {return boardType;}
 }

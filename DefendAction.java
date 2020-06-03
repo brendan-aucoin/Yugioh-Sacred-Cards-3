@@ -17,6 +17,7 @@ public class DefendAction extends Action{
 			if(duelist instanceof Ai) {
 				Ai ai = (Ai)duelist;
 				ai.setUsedMonsterIndex(ai.getUsedMonsterIndex()+1);
+				ai.signalUseMonsters();
 			}
 			card.setInDefense(true);
 			card.setUsedAction(true);

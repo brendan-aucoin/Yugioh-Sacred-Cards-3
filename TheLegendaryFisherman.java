@@ -29,7 +29,7 @@ public class TheLegendaryFisherman extends EffectMonster{
 		return "Board becomes a Water element";
 	}
 	
-	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField) {
+	public boolean effectCondition(Duelist player,Duelist opponent,Field playerField,Field opponentField,Board board) {
 		return false;
 	}
 }

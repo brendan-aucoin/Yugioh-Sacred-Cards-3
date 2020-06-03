@@ -20,23 +20,19 @@ public class Duelist {
 	private String name;
 	private int health;
 	private CardHolder trunk;
-	private ArrayList<Deck> decks;
 	private Deck deck;
 	private Hand hand;
 	private int numTributes;
 	private boolean playedCard;
-	private double money;
-	public static final double STARTING_MONEY = 5000.0;
+	
 	public static final int STARTING_HEALTH = 8000;
 	
 	public Duelist(String name) {
 		this.name = name;
 		health = STARTING_HEALTH;
 		trunk = new CardHolder();
-		decks = new ArrayList<Deck>();
 		hand = new Hand();
-		deck = new Deck("Deck # " + decks.size() + 1);//make basic deck
-		money = STARTING_MONEY;
+		deck = new Deck("Deck");//make basic deck
 		//variables that are affected constantly during the duel but start out as 0, and false.
 		numTributes = 0;
 		playedCard =  false;
@@ -59,9 +55,7 @@ public class Duelist {
 		}
 	}
 	
-	public void addMoney(double money) {
-		setMoney(getMoney() + money);
-	}
+	
 	
 	/*remove the card from your hand*/
 	public void playCardFromHand(Spot spot) {
@@ -81,8 +75,6 @@ public class Duelist {
 	public void setHealth(int health) {	this.health = health;}
 	public CardHolder getTrunk() {return trunk;}
 	public void setTrunk(CardHolder trunk) {this.trunk = trunk;}
-	public ArrayList<Deck> getDecks() {return decks;}
-	public void setDecks(ArrayList<Deck> decks) {this.decks = decks;}
 	public Deck getDeck() {	return deck;}
 	public void setDeck(Deck deck) {this.deck = deck;}
 	public int getNumTributes() {return numTributes;}
@@ -91,6 +83,5 @@ public class Duelist {
 	public void setPlayedCard(boolean playedCard) {this.playedCard = playedCard;}
 	public Hand getHand() {return hand;}
 	public void setHand(Hand hand) {this.hand = hand;}
-	public void setMoney(double money) {this.money = money;}
-	public double getMoney() {return money;}
+	
 }

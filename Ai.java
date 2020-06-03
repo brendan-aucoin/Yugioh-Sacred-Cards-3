@@ -19,11 +19,11 @@ import cards.EffectMonster;
 import cards.MagicCard;
 import cards.Monster;
 import cards.SpellCard;
+import cards.Token;
 import dueling.Phase;
 import dueling.Spot;
 import dueling.TextPopupPane;
 import states.DuelingState;
-import types.CardType;
 
 public class Ai extends Duelist{
 	private DuelingState duelingState;
@@ -40,7 +40,7 @@ public class Ai extends Duelist{
 	private boolean playedMonster,playedMagic;
 	private int usedMonsterIndex;
 	private boolean [] monstersHaveGone;
-	private Semaphore playMagicSemaphore,useMagicSemaphore,textPopupPaneSemaphore;
+	private Semaphore playMagicSemaphore,useMagicSemaphore,textPopupPaneSemaphore,useMonsterSemaphore;
 	public Ai(DuelingState duelingState,String name) {
 		super(name);
 		this.duelingState = duelingState;
@@ -55,9 +55,119 @@ public class Ai extends Duelist{
 		usedMonsterIndex = 0;
 		monstersHaveGone = new boolean[5];
 		clearMonstersHaveGone();
-		playMagicSemaphore = useMagicSemaphore = new Semaphore(1);
+		playMagicSemaphore = useMagicSemaphore = useMonsterSemaphore = new Semaphore(1);
 		textPopupPaneSemaphore = new Semaphore(0);
 	}
+	
+	private void activateEffect(Monster monster) {
+		if(monster instanceof EffectMonster) {
+			EffectMonster effectMonster = (EffectMonster)monster;
+			if(!effectMonster.hasUsedAction() && !effectMonster.hasUsedEffect()) {
+				if(effectMonster.effectCondition(this, duelingState.getPlayer(), duelingState.getOpponentField(), duelingState.getPlayerField(),duelingState.getBoard())) {
+					getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(
+							effectMonster,this,duelingState.getPlayer(),duelingState.getOpponentField(),duelingState.getPlayerField(),duelingState.getBoard()
+					);
+					usedMonsterIndex++;	
+				}
+			}
+		}
+	}
+	
+	public void signalUseMonsters() {
+		useMonsterSemaphore.release();
+	}
+	
+	private void useMonsterCards() {
+		numUsedMonstersActivated = 0;
+		usedMonsterIndex = 0;
+		clearMonstersHaveGone();
+		usedMonsterCard = false;
+		ArrayList<Monster> sortedMonstersByAttack = duelingState.getOpponentField().getSortedMonstersByAttack();
+		ArrayList<Spot> sortedMonstersByAttackSpots = duelingState.getOpponentField().getSortedMonsterSpots();
+		ArrayList<Spot> usedSpots = new ArrayList<Spot>();
+		numUsedMonstersActivated = 0;
+		numUsedMonsters =0;
+		for(int i= 0; i < sortedMonstersByAttack.size(); i++) {
+			Monster currentMonster = sortedMonstersByAttack.get(i);
+			Spot currentMonsterSpot =  sortedMonstersByAttackSpots.get(i);
+			if(currentMonster instanceof Token) {continue;}
+			//create a new task for each card
+			Runnable task = new Runnable() {
+				public void run() {
+					if(currentMonster.hasUsedAction()) {
+						numUsedMonstersActivated++;
+						if(numUsedMonstersActivated == numUsedMonsters) {
+							phase = CHANGE_TURN_PHASE;
+						}
+						return;
+					}
+					//activate the cards effect
+					activateEffect(currentMonster);
+					
+					//attacking directly
+					if(duelingState.getPlayerField().getMonsterCards().size() == 0) {
+						getAction(ActionList.ATTACK).performAction(
+						duelingState.getOpponent(),duelingState.getPlayer(),
+						currentMonsterSpot,null,
+						duelingState.getGame(),duelingState.getBoard(),
+						duelingState.getOpponentField(),duelingState.getPlayerField()
+						);
+					}
+						
+					//attacking another card
+					else {
+						ArrayList<Monster> playersRevealedMonsters = duelingState.getPlayerField().getRevealedSortedMonstersByCurrentStat();
+						ArrayList<Spot> playersRevealedMonsterSpots = duelingState.getPlayerField().getSortedRevealedMonsterSpotsByCurrentStat();
+						//try and attack any of the players revealed cards
+						for(int j=0; j < playersRevealedMonsters.size();j++) {
+							//do the condition check
+							Monster currentPlayerMonster = playersRevealedMonsters.get(j);
+							int currentPlayerMonsterStat = currentPlayerMonster.getAttack();
+							if(currentPlayerMonster.isInDefense()) {currentPlayerMonsterStat = currentPlayerMonster.getDefense();}
+							Spot currentPlayerSpot = playersRevealedMonsterSpots.get(j);
+							//if the ai's card is stronger
+							if(!currentMonster.weakTo(currentPlayerMonster) && (currentMonster.getAttack() > currentPlayerMonsterStat || currentPlayerMonster.weakTo(currentMonster))) {
+								getAction(ActionList.ATTACK).performAction(
+										duelingState.getOpponent(),duelingState.getPlayer(),
+										currentMonsterSpot,currentPlayerSpot,
+										duelingState.getGame(),duelingState.getBoard(),
+										duelingState.getOpponentField(),duelingState.getPlayerField()
+										);
+								break;
+							}
+	
+						}//end of for loop through the players cards
+									
+						//if your current card could not beat any of the players revealed cards
+						ArrayList<Monster> playersNonRevealedCards = duelingState.getPlayerField().getNonRevealedMonsters();
+						ArrayList<Spot> playersNonRevealedCardsSpots = duelingState.getPlayerField().getNonRevealedMonstersSpots();
+						for(int j = 0; j < playersNonRevealedCards.size();j++) {
+							getAction(ActionList.ATTACK).performAction(
+								duelingState.getOpponent(),duelingState.getPlayer(),
+								currentMonsterSpot,playersNonRevealedCardsSpots.get(j),
+								duelingState.getGame(),duelingState.getBoard(),
+								duelingState.getOpponentField(),duelingState.getPlayerField()
+							);
+							break;
+						}
+						if(!currentMonster.hasUsedAction()) {	
+							getAction(ActionList.DEFEND).performAction(currentMonster,duelingState.getOpponent());
+						}
+					}
+						
+					numUsedMonstersActivated++;
+					if(numUsedMonstersActivated == numUsedMonsters) {
+						phase = CHANGE_TURN_PHASE;
+					}
+				}
+			};
+			useMonsterTasks.add(task);
+			
+		}
+			
+		usedMonsterCard = true;
+	}	
+	
 	/*the logic of the AI*/
 	public void update() {
 		//you only want to update the AI if its the AI's turn.
@@ -120,7 +230,7 @@ public class Ai extends Duelist{
 			}
 			
 		}
-	}
+	}	
 	
 	
 	private void changeTurn() {
@@ -133,7 +243,7 @@ public class Ai extends Duelist{
 		aiPhaseDone = true;
 		executor.shutdown();
 		clearMonstersHaveGone();
-		playMagicSemaphore = useMagicSemaphore = new Semaphore(1);
+		playMagicSemaphore = useMagicSemaphore = useMonsterSemaphore = new Semaphore(1);
 		textPopupPaneSemaphore = new Semaphore(0);
 		executor = Executors.newSingleThreadScheduledExecutor();
 		getAction(ActionList.END_TURN).performAction(duelingState.getOpponent(),duelingState.getOpponentField(),Phase.PLAYERS_TURN);//go back to the players phase
@@ -145,6 +255,7 @@ public class Ai extends Duelist{
 		ArrayList<Spot> magicCardSpots = getHand().getMagicCardsSpots();
 		ArrayList<MagicCard> magicCards = getHand().getMagicCards();
 		ArrayList<Runnable> tasks = new ArrayList<Runnable>();
+		if(duelingState.getOpponentField().getMagicCards().size() == 5) {return tasks;}
 		for(int i =0; i < magicCards.size();i++) {
 			MagicCard magicCard = magicCards.get(i);
 			if(magicCard == null || magicCardSpots.get(i) == null) {return null;}
@@ -155,8 +266,9 @@ public class Ai extends Duelist{
 						try {
 							playMagicSemaphore.acquire(); 
 							Spot boardSpot = getFirstMagicCardBoardSpot();
-							if(boardSpot == null) {return;}
-							summonCard(magicCard,currentMagicCardSpot,boardSpot);
+							if(boardSpot != null) {
+								summonCard(magicCard,currentMagicCardSpot,boardSpot);
+							}
 							numPlayedMagicCardsActivated++;
 							if(numPlayedMagicCardsActivated == numPlayedMagicCards) {
 								phase = USE_MAGIC_PHASE;
@@ -302,105 +414,9 @@ public class Ai extends Duelist{
 		}
 		
 	}
+
 	
-	private void useMonsterCards() {
-		numUsedMonstersActivated = 0;
-		usedMonsterIndex = 0;
-		clearMonstersHaveGone();
-		usedMonsterCard = false;
-		/*to do other actions you will want to put the entire code inside a runnable task
-		 * becuase if you dont then the field that you are accessing is out of sync.*/
-		ArrayList<Monster> sortedMonstersByAttack = duelingState.getOpponentField().getSortedMonstersByAttack();
-		ArrayList<Spot> sortedMonstersByAttackSpots = duelingState.getOpponentField().getSortedMonsterSpots();
-		numUsedMonsters = duelingState.getOpponentField().getMonsterCards().size();
-		
-		for(int i= 0; i < sortedMonstersByAttack.size(); i++) {
-			Monster currentMonster = sortedMonstersByAttack.get(i);
-			Spot currentMonsterSpot =  sortedMonstersByAttackSpots.get(i);
-			/*create a new task for each card*/
-			Runnable task = new Runnable() {
-				public void run() {
-					if(currentMonster.hasUsedAction()) {return;}
-					//activate the cards effect
-					activateEffect(currentMonster);
-					
-					//attacking directly
-					if(duelingState.getPlayerField().getMonsterCards().size() == 0) {
-						getAction(ActionList.ATTACK).performAction(
-						duelingState.getOpponent(),duelingState.getPlayer(),
-						currentMonsterSpot,null,
-						duelingState.getGame(),duelingState.getBoard(),
-						duelingState.getOpponentField(),duelingState.getPlayerField()
-						);
-					}
-						
-					/*attacking another card*/
-					else {
-						ArrayList<Monster> playersRevealedMonsters = duelingState.getPlayerField().getRevealedSortedMonstersByCurrentStat();
-						ArrayList<Spot> playersRevealedMonsterSpots = duelingState.getPlayerField().getSortedRevealedMonsterSpotsByCurrentStat();
-						//try and attack any of the players revealed cards
-						for(int j=0; j < playersRevealedMonsters.size();j++) {
-							//do the condition check
-							Monster currentPlayerMonster = playersRevealedMonsters.get(j);
-							int currentPlayerMonsterStat = currentPlayerMonster.getAttack();
-							if(currentPlayerMonster.isInDefense()) {currentPlayerMonsterStat = currentPlayerMonster.getDefense();}
-							Spot currentPlayerSpot = playersRevealedMonsterSpots.get(j);
-							//if the ai's card is stronger
-							if(!currentMonster.weakTo(currentPlayerMonster) && (currentMonster.getAttack() > currentPlayerMonsterStat || currentPlayerMonster.weakTo(currentMonster))) {
-								getAction(ActionList.ATTACK).performAction(
-										duelingState.getOpponent(),duelingState.getPlayer(),
-										currentMonsterSpot,currentPlayerSpot,
-										duelingState.getGame(),duelingState.getBoard(),
-										duelingState.getOpponentField(),duelingState.getPlayerField()
-										);
-								break;
-							}
 	
-						}//end of for loop through the players cards
-									
-						//if your current card could not beat any of the players revealed cards
-						ArrayList<Monster> playersNonRevealedCards = duelingState.getPlayerField().getNonRevealedMonsters();
-						ArrayList<Spot> playersNonRevealedCardsSpots = duelingState.getPlayerField().getNonRevealedMonstersSpots();
-						for(int j = 0; j < playersNonRevealedCards.size();j++) {
-							getAction(ActionList.ATTACK).performAction(
-								duelingState.getOpponent(),duelingState.getPlayer(),
-								currentMonsterSpot,playersNonRevealedCardsSpots.get(j),
-								duelingState.getGame(),duelingState.getBoard(),
-								duelingState.getOpponentField(),duelingState.getPlayerField()
-							);
-							break;
-						}
-						if(!currentMonster.hasUsedAction()) {	
-							getAction(ActionList.DEFEND).performAction(currentMonster,duelingState.getOpponent());
-						}
-					}
-						
-					numUsedMonstersActivated++;
-					if(numUsedMonstersActivated == numUsedMonsters) {
-						phase = CHANGE_TURN_PHASE;
-					}
-				}
-			};
-			useMonsterTasks.add(task);
-			
-		}
-			
-		usedMonsterCard = true;
-	}	
-	
-	private void activateEffect(Monster monster) {
-		if(monster instanceof EffectMonster) {
-			EffectMonster effectMonster = (EffectMonster)monster;
-			if(!effectMonster.hasUsedAction() && !effectMonster.hasUsedEffect()) {
-				if(effectMonster.effectCondition(this, duelingState.getPlayer(), duelingState.getOpponentField(), duelingState.getPlayerField())) {
-					getAction(ActionList.ACTIVATE_MONSTER_EFFECT).performAction(
-							effectMonster,this,duelingState.getPlayer(),duelingState.getOpponentField(),duelingState.getPlayerField(),duelingState.getBoard()
-					);
-					usedMonsterIndex++;	
-				}
-			}
-		}
-	}
 	
 	/*summons a card basically if it does not require tributes
 	 * if it requires tributes then call the summonTributes function 
@@ -460,7 +476,8 @@ public class Ai extends Duelist{
 	
 	/*calls the play card action for whatever card you pass in */
 	private void summonCard(Card card,Spot handSpot,Spot boardSpot) {
-		getAction(ActionList.PLAY_CARD_FROM_HAND).performAction(duelingState.getOpponent(),handSpot,boardSpot,duelingState.getBoard(),duelingState.getOpponentField());
+		//Duelist player,Spot handSpot,Spot boardSpot,Board board,Field playerField,Duelist opponent,Field opponentField
+		getAction(ActionList.PLAY_CARD_FROM_HAND).performAction(duelingState.getOpponent(),handSpot,boardSpot,duelingState.getBoard(),duelingState.getOpponentField(),duelingState.getPlayer(),duelingState.getPlayerField());
 		card.setRevealed(false);
 	}
 	
